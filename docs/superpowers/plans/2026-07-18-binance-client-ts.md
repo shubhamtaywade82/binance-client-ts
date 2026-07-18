@@ -347,7 +347,7 @@ git commit -m "feat: add typed errors (BinanceApiError, RateLimitError, NetworkE
 ```typescript
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { HttpClient } from '../../src/client/HttpClient.js';
 import { BinanceApiError, RateLimitError } from '../../src/errors/index.js';
 
@@ -376,7 +376,9 @@ describe('HttpClient', () => {
   });
 
   it('retries on 429 honoring Retry-After, then resolves', async () => {
-    vi.useFakeTimers();
+    // Retry-After: '0' keeps the retry delay real but effectively instant —
+    // fake timers don't reliably interleave with msw's Node-level request
+    // interception, so real (tiny) delays are used instead.
     let calls = 0;
     server.use(
       http.get('https://api.example.com/limited', () => {
@@ -384,7 +386,7 @@ describe('HttpClient', () => {
         if (calls === 1) {
           return HttpResponse.json(
             { code: -1003, msg: 'Too many requests' },
-            { status: 429, headers: { 'Retry-After': '1' } },
+            { status: 429, headers: { 'Retry-After': '0' } },
           );
         }
         return HttpResponse.json({ ok: true });
@@ -392,15 +394,11 @@ describe('HttpClient', () => {
     );
 
     const client = new HttpClient({ baseURL: 'https://api.example.com', maxRetries: 2, minTimeMs: 0 });
-    const promise = client.get<{ ok: boolean }>('/limited');
-    await vi.advanceTimersByTimeAsync(1000);
-    await expect(promise).resolves.toEqual({ ok: true });
+    await expect(client.get<{ ok: boolean }>('/limited')).resolves.toEqual({ ok: true });
     expect(calls).toBe(2);
-    vi.useRealTimers();
   });
 
   it('throws RateLimitError once retries are exhausted', async () => {
-    vi.useFakeTimers();
     server.use(
       http.get('https://api.example.com/always-limited', () =>
         HttpResponse.json(
@@ -415,11 +413,7 @@ describe('HttpClient', () => {
       maxRetries: 1,
       minTimeMs: 0,
     });
-    const promise = client.get('/always-limited');
-    const assertion = expect(promise).rejects.toThrow(RateLimitError);
-    await vi.advanceTimersByTimeAsync(5000);
-    await assertion;
-    vi.useRealTimers();
+    await expect(client.get('/always-limited')).rejects.toThrow(RateLimitError);
   });
 });
 ```
@@ -459,7 +453,7 @@ export class HttpClient {
   private readonly limiter: Bottleneck;
   private readonly maxRetries: number;
 
-  constructor(private readonly options: HttpClientOptions) {
+  constructor(options: HttpClientOptions) {
     this.axios = axios.create({
       baseURL: options.baseURL,
       timeout: options.timeoutMs ?? 10_000,
