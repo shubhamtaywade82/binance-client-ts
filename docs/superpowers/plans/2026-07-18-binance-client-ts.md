@@ -756,7 +756,7 @@ export const ExchangeSymbolSchema = z
     baseAsset: z.string(),
     quoteAsset: z.string(),
   })
-  .passthrough();
+  .loose();
 export type ExchangeSymbol = z.infer<typeof ExchangeSymbolSchema>;
 
 export const ExchangeInfoSchema = z
@@ -765,7 +765,7 @@ export const ExchangeInfoSchema = z
     serverTime: z.number(),
     symbols: z.array(ExchangeSymbolSchema),
   })
-  .passthrough();
+  .loose();
 export type ExchangeInfo = z.infer<typeof ExchangeInfoSchema>;
 ```
 
