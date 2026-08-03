@@ -1,0 +1,55 @@
+import { WebSocketServer } from 'ws';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { WsApi } from '../../src/ws/WsApi.js';
+
+describe('WsApi', () => {
+  let server: WebSocketServer;
+  let port: number;
+
+  beforeEach(async () => {
+    server = new WebSocketServer({ port: 0 });
+    await new Promise<void>((resolve) => server.once('listening', resolve));
+    port = (server.address() as { port: number }).port;
+  });
+
+  afterEach(() => {
+    server.close();
+  });
+
+  it('sends a signed request and resolves the response', async () => {
+    let received: { id: string; method: string; params: Record<string, unknown> } | undefined;
+    server.on('connection', (socket) => {
+      socket.on('message', (raw) => {
+        received = JSON.parse(raw.toString()) as { id: string; method: string; params: Record<string, unknown> };
+        socket.send(JSON.stringify({ id: received.id, status: 200, result: { orderId: 42 } }));
+      });
+    });
+
+    const api = new WsApi({ baseUrl: `ws://localhost:${port}`, apiKey: 'k', apiSecret: 's' });
+    const res = await api.placeOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.01 });
+
+    expect(received?.method).toBe('order.place');
+    expect(received?.params.symbol).toBe('BTCUSDT');
+    expect(received?.params.apiKey).toBe('k');
+    expect(received?.params.signature).toBeTruthy();
+    expect(received?.params.timestamp).toBeTruthy();
+    expect(res.result).toEqual({ orderId: 42 });
+  });
+
+  it('rejects on API error status', async () => {
+    server.on('connection', (socket) => {
+      socket.on('message', (raw) => {
+        const { id } = JSON.parse(raw.toString());
+        socket.send(JSON.stringify({ id, status: 400, error: { code: -2019, msg: 'insufficient balance' } }));
+      });
+    });
+
+    const api = new WsApi({ baseUrl: `ws://localhost:${port}`, apiKey: 'k', apiSecret: 's' });
+    await expect(api.request('order.place', { symbol: 'BTCUSDT' })).rejects.toThrow('insufficient balance');
+  });
+
+  it('throws when credentials are missing', async () => {
+    const api = new WsApi({ baseUrl: `ws://localhost:${port}` });
+    await expect(api.request('order.place', {})).rejects.toThrow('API key and secret required');
+  });
+});

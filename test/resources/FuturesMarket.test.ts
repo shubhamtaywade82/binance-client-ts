@@ -40,4 +40,69 @@ describe('FuturesMarket', () => {
     const ticker = await market.ticker24hr('SOLUSDT');
     expect(ticker.lastPrice).toBe(101);
   });
+
+  it('fetches continuous klines', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/continuousKlines', () =>
+        HttpResponse.json([[1, '1', '2', '0.5', '1.5', '10', 2, '15', 3, '5', '7.5', '0']]),
+      ),
+    );
+
+    const market = new FuturesMarket();
+    const klines = await market.continuousKlines('BTCUSDT', 'perpetual', '1h');
+    expect(klines[0]?.close).toBe(1.5);
+  });
+
+  it('fetches trading day ticker', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/tradingDayTicker', () =>
+        HttpResponse.json([{ symbol: 'BTCUSDT', priceChange: '100' }]),
+      ),
+    );
+
+    const market = new FuturesMarket();
+    const ticker = await market.tradingDayTicker('BTCUSDT');
+    expect((ticker[0] as { symbol: string }).symbol).toBe('BTCUSDT');
+  });
+
+  it('fetches v2 ticker price', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v2/ticker/price', () =>
+        HttpResponse.json({ symbol: 'BTCUSDT', price: '60000' }),
+      ),
+    );
+
+    const market = new FuturesMarket();
+    const ticker = await market.tickerPriceV2('BTCUSDT');
+    expect((ticker as { price: number }).price).toBe(60000);
+  });
+
+  it('resolves instrument details from exchangeInfo', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/exchangeInfo', () =>
+        HttpResponse.json({
+          timezone: 'UTC', serverTime: 1,
+          symbols: [{ symbol: 'BTCUSDT', status: 'TRADING', baseAsset: 'BTC', quoteAsset: 'USDT' }],
+        }),
+      ),
+    );
+
+    const market = new FuturesMarket();
+    const details = await market.instrumentDetails('BTCUSDT');
+    expect(details.baseAsset).toBe('BTC');
+  });
+
+  it('throws when instrument is not found', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/exchangeInfo', () =>
+        HttpResponse.json({
+          timezone: 'UTC', serverTime: 1,
+          symbols: [{ symbol: 'ETHUSDT', status: 'TRADING', baseAsset: 'ETH', quoteAsset: 'USDT' }],
+        }),
+      ),
+    );
+
+    const market = new FuturesMarket();
+    await expect(market.instrumentDetails('BTCUSDT')).rejects.toThrow('not found');
+  });
 });

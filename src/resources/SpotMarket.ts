@@ -3,8 +3,8 @@ import { MarketDataBase } from './MarketDataBase.js';
 import { AvgPrice, AvgPriceSchema } from '../types/market.types.js';
 
 export class SpotMarket extends MarketDataBase {
-  constructor() {
-    super(new HttpClient({ baseURL: 'https://api.binance.com/api/v3' }));
+  constructor(http?: HttpClient) {
+    super(http ?? new HttpClient({ baseURL: 'https://api.binance.com/api/v3' }));
   }
 
   async avgPrice(symbol: string): Promise<AvgPrice> {

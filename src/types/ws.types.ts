@@ -97,6 +97,81 @@ export const WsMarkPricePayloadSchema = z.object({
 });
 export type WsMarkPricePayload = z.infer<typeof WsMarkPricePayloadSchema>;
 
+export const WsMiniTickerPayloadSchema = z.object({
+  e: z.literal('24hrMiniTicker'),
+  E: z.number(),
+  s: z.string(),
+  c: z.string().transform(Number),
+  o: z.string().transform(Number),
+  h: z.string().transform(Number),
+  l: z.string().transform(Number),
+  v: z.string().transform(Number),
+  q: z.string().transform(Number),
+});
+export type WsMiniTickerPayload = z.infer<typeof WsMiniTickerPayloadSchema>;
+
+export const WsForceOrderPayloadSchema = z.object({
+  e: z.literal('forceOrder'),
+  E: z.number(),
+  o: z.object({
+    s: z.string(),
+    S: z.string(),
+    o: z.string(),
+    f: z.string(),
+    q: z.string().transform(Number),
+    p: z.string().transform(Number),
+    ap: z.string().transform(Number),
+    X: z.string(),
+    l: z.string().transform(Number),
+    z: z.string().transform(Number),
+    T: z.number(),
+  }),
+});
+export type WsForceOrderPayload = z.infer<typeof WsForceOrderPayloadSchema>;
+
+export const WsCompositeIndexPayloadSchema = z.object({
+  e: z.literal('compositeIndex'),
+  E: z.number(),
+  s: z.string(),
+  p: z.string().transform(Number),
+  c: z.array(
+    z.object({
+      b: z.string(),
+      q: z.string(),
+      w: z.string().transform(Number),
+      p: z.string().transform(Number),
+    }),
+  ),
+});
+export type WsCompositeIndexPayload = z.infer<typeof WsCompositeIndexPayloadSchema>;
+
+export const WsAssetIndexPayloadSchema = z.object({
+  e: z.literal('assetIndex'),
+  E: z.number(),
+  s: z.string(),
+  i: z.string().transform(Number),
+  b: z.string().transform(Number),
+  a: z.string().transform(Number),
+});
+export type WsAssetIndexPayload = z.infer<typeof WsAssetIndexPayloadSchema>;
+
+export const WsRollingWindowTickerPayloadSchema = z.object({
+  e: z.literal('1hTicker'),
+  E: z.number(),
+  s: z.string(),
+  p: z.string().transform(Number),
+  P: z.string().transform(Number),
+  o: z.string().transform(Number),
+  h: z.string().transform(Number),
+  l: z.string().transform(Number),
+  c: z.string().transform(Number),
+  v: z.string().transform(Number),
+  q: z.string().transform(Number),
+  O: z.number(),
+  C: z.number(),
+});
+export type WsRollingWindowTickerPayload = z.infer<typeof WsRollingWindowTickerPayloadSchema>;
+
 export type WsStreamPayload =
   | WsKlinePayload
   | WsAggTradePayload
@@ -104,15 +179,28 @@ export type WsStreamPayload =
   | WsDepthUpdatePayload
   | WsTicker24hrPayload
   | WsBookTickerPayload
-  | WsMarkPricePayload;
+  | WsMarkPricePayload
+  | WsMiniTickerPayload
+  | WsForceOrderPayload
+  | WsCompositeIndexPayload
+  | WsAssetIndexPayload
+  | WsRollingWindowTickerPayload;
 
 export function parseWsPayload(streamName: string, raw: unknown): WsStreamPayload {
   if (streamName.includes('@kline_')) return WsKlinePayloadSchema.parse(raw);
+  if (streamName.includes('@continuousKline_') || streamName.includes('@indexPriceKline_') || streamName.includes('@markPriceKline_')) {
+    return WsKlinePayloadSchema.parse(raw);
+  }
   if (streamName.includes('@aggTrade')) return WsAggTradePayloadSchema.parse(raw);
   if (streamName.includes('@trade')) return WsTradePayloadSchema.parse(raw);
   if (streamName.includes('@depth')) return WsDepthUpdatePayloadSchema.parse(raw);
   if (streamName.includes('@bookTicker')) return WsBookTickerPayloadSchema.parse(raw);
   if (streamName.includes('@markPrice')) return WsMarkPricePayloadSchema.parse(raw);
+  if (streamName.includes('@miniTicker')) return WsMiniTickerPayloadSchema.parse(raw);
+  if (streamName.includes('@forceOrder')) return WsForceOrderPayloadSchema.parse(raw);
+  if (streamName.includes('@compositeIndex')) return WsCompositeIndexPayloadSchema.parse(raw);
+  if (streamName.includes('@assetIndex')) return WsAssetIndexPayloadSchema.parse(raw);
+  if (streamName.includes('@ticker_')) return WsRollingWindowTickerPayloadSchema.parse(raw);
   if (streamName.includes('@ticker')) return WsTicker24hrPayloadSchema.parse(raw);
   throw new Error(`Unknown WS stream type: ${streamName}`);
 }

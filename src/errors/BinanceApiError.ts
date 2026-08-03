@@ -1,4 +1,6 @@
-export class BinanceApiError extends Error {
+import { BinanceError } from './BinanceError.js';
+
+export class BinanceApiError extends BinanceError {
   readonly code: number;
   readonly status: number;
 

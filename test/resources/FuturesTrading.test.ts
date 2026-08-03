@@ -1,0 +1,111 @@
+import { http, HttpResponse } from 'msw';
+import { setupServer } from 'msw/node';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { FuturesTrading } from '../../src/resources/FuturesTrading.js';
+import { HttpClient } from '../../src/client/HttpClient.js';
+
+const server = setupServer();
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+function trading(): FuturesTrading {
+  return new FuturesTrading(new HttpClient({ baseURL: 'https://fapi.binance.com', apiKey: 'k', apiSecret: 's' }));
+}
+
+const ACK_ORDER = {
+  orderId: 123, symbol: 'BTCUSDT', status: 'NEW', clientOrderId: 'c1', price: '60000', avgPrice: '0',
+  origQty: '0.01', executedQty: '0', cumQuote: '0', type: 'LIMIT', reduceOnly: false, side: 'BUY',
+  positionSide: 'BOTH', timeInForce: 'GTC', time: 1, updateTime: 1, workingType: 'CONTRACT_PRICE', origType: 'LIMIT',
+};
+
+describe('FuturesTrading', () => {
+  it('places a limit order', async () => {
+    server.use(
+      http.post('https://fapi.binance.com/fapi/v1/order', () => HttpResponse.json(ACK_ORDER)),
+    );
+
+    const order = await trading().createOrder({
+      symbol: 'BTCUSDT', side: 'BUY', type: 'LIMIT', quantity: 0.01, price: 60000, timeInForce: 'GTC',
+    });
+    expect(order.orderId).toBe(123);
+    expect(order.status).toBe('NEW');
+  });
+
+  it('creates a test order', async () => {
+    server.use(
+      http.post('https://fapi.binance.com/fapi/v1/order/test', () => HttpResponse.json({})),
+    );
+
+    const res = await trading().createTestOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.01 });
+    expect(res).toEqual({});
+  });
+
+  it('queries an order', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/order', () => HttpResponse.json({ ...ACK_ORDER, status: 'FILLED' })),
+    );
+
+    const order = await trading().getOrder('BTCUSDT', { orderId: 123 });
+    expect(order.status).toBe('FILLED');
+  });
+
+  it('cancels an order via DELETE', async () => {
+    let method = '';
+    server.use(
+      http.delete('https://fapi.binance.com/fapi/v1/order', ({ request }) => {
+        method = request.method;
+        return HttpResponse.json({ ...ACK_ORDER, status: 'CANCELED' });
+      }),
+    );
+
+    const order = await trading().cancelOrder('BTCUSDT', { orderId: 123 });
+    expect(method).toBe('DELETE');
+    expect(order.status).toBe('CANCELED');
+  });
+
+  it('sets leverage', async () => {
+    server.use(
+      http.post('https://fapi.binance.com/fapi/v1/leverage', () =>
+        HttpResponse.json({ leverage: 20, maxNotionalValue: '100000', symbol: 'BTCUSDT' }),
+      ),
+    );
+
+    const res = await trading().setLeverage('BTCUSDT', 20);
+    expect(res.leverage).toBe(20);
+  });
+
+  it('creates batch orders with JSON-stringified batchOrders param', async () => {
+    let batchParam = '';
+    server.use(
+      http.post('https://fapi.binance.com/fapi/v1/batchOrders', ({ request }) => {
+        batchParam = request.url;
+        return HttpResponse.json([ACK_ORDER]);
+      }),
+    );
+
+    const res = await trading().createBatchOrders([
+      { symbol: 'BTCUSDT', side: 'BUY', type: 'LIMIT', quantity: 0.01, price: 60000 },
+    ]);
+    expect(res[0]?.orderId).toBe(123);
+    expect(batchParam).toContain('batchOrders=%5B%7B');
+  });
+
+  it('cancels all open orders', async () => {
+    server.use(
+      http.delete('https://fapi.binance.com/fapi/v1/allOpenOrders', () => HttpResponse.json({ code: 200, msg: 'ok' })),
+    );
+
+    const res = await trading().cancelAllOpenOrders('BTCUSDT');
+    expect(res.code).toBe(200);
+  });
+
+  it('sets margin type', async () => {
+    server.use(
+      http.post('https://fapi.binance.com/fapi/v1/marginType', () => HttpResponse.json({ code: 200, msg: 'ok' })),
+    );
+
+    const res = await trading().setMarginType('BTCUSDT', 'isolated');
+    expect(res.msg).toBe('ok');
+  });
+});

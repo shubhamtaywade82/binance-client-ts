@@ -26,6 +26,23 @@ export class MarketDataBase {
     return ExchangeInfoSchema.parse(await this.http.get('/exchangeInfo'));
   }
 
+  async ping(): Promise<Record<string, unknown>> {
+    return this.http.get('/ping');
+  }
+
+  async serverTime(): Promise<{ serverTime: number }> {
+    return this.http.get('/time');
+  }
+
+  async historicalTrades(symbol: string, options?: { fromId?: number; limit?: number }): Promise<Trade[]> {
+    const data = await this.http.get('/historicalTrades', {
+      symbol,
+      fromId: options?.fromId,
+      limit: options?.limit ?? 500,
+    });
+    return TradesResponseSchema.parse(data);
+  }
+
   async klines(
     symbol: string,
     interval: KlineInterval,

@@ -14,13 +14,29 @@ import {
   TakerLongShortRatioSchema,
 } from '../types/futures.types.js';
 
+export interface FuturesDataEndpoints {
+  restFapi?: string;
+  restFuturesData?: string;
+  apiKey?: string;
+  apiSecret?: string;
+  recvWindow?: number;
+  timeoutMs?: number;
+  maxRetries?: number;
+  retryBaseDelayMs?: number;
+  retryMaxDelayMs?: number;
+}
+
 export class FuturesData {
   private readonly http: HttpClient;
   private readonly dataHttp: HttpClient;
 
-  constructor() {
-    this.http = new HttpClient({ baseURL: 'https://fapi.binance.com/fapi/v1' });
-    this.dataHttp = new HttpClient({ baseURL: 'https://fapi.binance.com/futures/data' });
+  constructor(endpoints?: FuturesDataEndpoints) {
+    const { restFapi, restFuturesData, ...httpOptions } = endpoints ?? {};
+    this.http = new HttpClient({ baseURL: restFapi ?? 'https://fapi.binance.com/fapi/v1', ...httpOptions });
+    this.dataHttp = new HttpClient({
+      baseURL: restFuturesData ?? 'https://fapi.binance.com/futures/data',
+      ...httpOptions,
+    });
   }
 
   async fundingRateHistory(
@@ -67,5 +83,90 @@ export class FuturesData {
   async takerLongShortRatio(symbol: string, period: string, limit = 30): Promise<TakerLongShortRatioEntry[]> {
     const data = await this.dataHttp.get('/takerlongshortRatio', { symbol, period, limit });
     return TakerLongShortRatioSchema.parse(data);
+  }
+
+  async basis(
+    symbol: string,
+    period: string,
+    options?: { startTime?: number; endTime?: number; limit?: number },
+  ): Promise<unknown[]> {
+    return this.dataHttp.get('/basis', {
+      symbol,
+      period,
+      startTime: options?.startTime,
+      endTime: options?.endTime,
+      limit: options?.limit,
+    });
+  }
+
+  async fundingInfo(): Promise<unknown[]> {
+    return this.http.get('/fundingInfo');
+  }
+
+  async assetIndex(symbol?: string): Promise<unknown[] | unknown> {
+    const params = symbol ? { symbol } : {};
+    return this.http.get('/assetIndex', params);
+  }
+
+  async compositeIndexInfo(symbol?: string): Promise<unknown> {
+    const params = symbol ? { symbol } : {};
+    return this.http.get('/indexInfo', params);
+  }
+
+  async adlQuantile(symbol?: string): Promise<unknown[]> {
+    const params = symbol ? { symbol } : {};
+    return this.http.get('/adlQuantile', params, 'signed');
+  }
+
+  async blvtInfo(tokenName?: string): Promise<unknown[]> {
+    const params = tokenName ? { tokenName } : {};
+    return this.http.get('/lvtKlines', params);
+  }
+
+  async indexPriceConstituents(symbol: string): Promise<unknown> {
+    return this.http.get('/constituents', { symbol });
+  }
+
+  async symbolConfig(symbol?: string): Promise<unknown[]> {
+    const params = symbol ? { symbol } : {};
+    return this.http.get('/symbolConfig', params);
+  }
+
+  async quantitativeRules(): Promise<unknown[]> {
+    return this.http.get('/quantitativeRules');
+  }
+
+  async forceOrders(options?: {
+    symbol?: string;
+    autoCloseType?: 'LIQUIDATION' | 'ADL';
+    startTime?: number;
+    endTime?: number;
+    limit?: number;
+  }): Promise<unknown[]> {
+    return this.http.get('/forceOrders', {
+      symbol: options?.symbol,
+      autoCloseType: options?.autoCloseType,
+      startTime: options?.startTime,
+      endTime: options?.endTime,
+      limit: options?.limit,
+    });
+  }
+
+  async insuranceFundBalance(options?: { symbol?: string; startTime?: number; endTime?: number; limit?: number }): Promise<unknown[]> {
+    return this.http.get('/insuranceFundBalance', {
+      symbol: options?.symbol,
+      startTime: options?.startTime,
+      endTime: options?.endTime,
+      limit: options?.limit,
+    });
+  }
+
+  async pmExchangeInfo(): Promise<unknown> {
+    return this.http.get('/pmExchangeInfo');
+  }
+
+  async delistSchedule(symbol?: string): Promise<unknown[]> {
+    const params = symbol ? { symbol } : {};
+    return this.http.get('/delistSchedule', params);
   }
 }

@@ -44,6 +44,16 @@ export class BaseWS extends EventEmitter {
     this.ws?.close();
   }
 
+  reconnect(): void {
+    if (this.ws?.readyState === WebSocket.OPEN) this.ws.close();
+    this.reconnectAttempt = 0;
+    if (!this.closedByUser) this.connect();
+  }
+
+  resetReconnectAttempts(): void {
+    this.reconnectAttempt = 0;
+  }
+
   private isOpen(): boolean {
     return this.ws?.readyState === WebSocket.OPEN;
   }

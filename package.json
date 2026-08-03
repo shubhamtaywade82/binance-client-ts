@@ -1,7 +1,7 @@
 {
   "name": "binance-client-ts",
-  "version": "0.1.0",
-  "description": "TypeScript client for Binance public REST + WebSocket APIs (Spot + USD-M Futures)",
+  "version": "2.1.0",
+  "description": "TypeScript client for Binance APIs (Spot + USD-M Futures) — market data, account, trading, algo orders, user data streams, signed WS API",
   "license": "MIT",
   "author": "Shubham Taywade",
   "repository": {
@@ -23,6 +23,18 @@
   "sideEffects": false,
   "files": ["dist"],
   "engines": { "node": ">=18" },
+  "keywords": [
+    "binance",
+    "futures",
+    "usdm",
+    "spot",
+    "api",
+    "client",
+    "crypto",
+    "trading",
+    "websocket",
+    "typescript"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
