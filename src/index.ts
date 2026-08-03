@@ -32,4 +32,31 @@ export * from './types/ws.types.js';
 export * from './types/account.types.js';
 export * from './types/trading.types.js';
 export * from './types/userdata.types.js';
+export * from './types/userdata.types.js';
 export * from './errors/index.js';
+
+export {
+  createFuturesToolkit,
+  toolkitToFormats,
+  type FuturesToolkit,
+} from './tools/index.js';
+export type {
+  ToolDefinition,
+  ToolContext,
+} from './tools/types.js';
+export {
+  toJsonSchema,
+  toOpenAITool,
+  toAnthropicTool,
+  toMCPTool,
+  toToolList,
+  textResult,
+} from './tools/types.js';
+export {
+  marketDataTools,
+  accountTools,
+  tradingTools,
+  wsTools,
+  getBufferedWsEvents,
+} from './tools/index.js';
+export { createBinanceMcpServer } from './mcp/server.js';

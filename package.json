@@ -1,7 +1,7 @@
 {
   "name": "binance-client-ts",
   "version": "2.1.0",
-  "description": "TypeScript client for Binance APIs (Spot + USD-M Futures) — market data, account, trading, algo orders, user data streams, signed WS API",
+  "description": "TypeScript client for Binance APIs (Spot + USD-M Futures) — market data, account, trading, algo orders, user data streams, signed WS API, LLM tool layer + MCP server",
   "license": "MIT",
   "author": "Shubham Taywade",
   "repository": {
@@ -18,7 +18,19 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "import": "./dist/tools/index.js",
+      "require": "./dist/tools/index.cjs"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js"
+    },
     "./package.json": "./package.json"
+  },
+  "bin": {
+    "binance-usdm-mcp": "./dist/mcp/index.js"
   },
   "sideEffects": false,
   "files": ["dist"],
@@ -41,9 +53,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "smoke": "tsx scripts/smoke-test.ts"
+    "smoke": "tsx scripts/smoke-test.ts",
+    "mcp": "tsx src/mcp/index.ts",
+    "mcp:http": "tsx src/mcp/index.ts --http"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "axios": "^1.13.6",
     "bottleneck": "^2.19.5",
     "ws": "^8.18.0",

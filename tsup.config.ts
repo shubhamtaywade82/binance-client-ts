@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts', 'src/mcp/index.ts'],
   format: ['esm', 'cjs'],
   dts: true,
   sourcemap: true,
@@ -9,4 +9,5 @@ export default defineConfig({
   splitting: false,
   minify: false,
   target: 'es2020',
+  external: ['@modelcontextprotocol/sdk'],
 });
