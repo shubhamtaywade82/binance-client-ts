@@ -1,3 +1,9 @@
+export { McpServer } from './mcp/mcp-server.js';
+export type { McpServer as McpServerType } from './mcp/mcp-server.js';
+
+export { PaperTradingEngine } from './paper/PaperTradingEngine.js';
+export type { PaperPosition, PaperOrder, PaperAccount } from './paper/PaperTradingEngine.js';
+
 export const VERSION = '2.1.0';
 
 export { BinanceClient } from './client/BinanceClient.js';

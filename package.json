@@ -21,8 +21,12 @@
     "./package.json": "./package.json"
   },
   "sideEffects": false,
-  "files": ["dist"],
-  "engines": { "node": ">=18" },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [
     "binance",
     "futures",
@@ -44,6 +48,7 @@
     "smoke": "tsx scripts/smoke-test.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "axios": "^1.13.6",
     "bottleneck": "^2.19.5",
     "ws": "^8.18.0",
