@@ -55,7 +55,10 @@
     "typecheck": "tsc --noEmit",
     "smoke": "tsx scripts/smoke-test.ts",
     "mcp": "tsx src/mcp/index.ts",
-    "mcp:http": "tsx src/mcp/index.ts --http"
+    "mcp:http": "tsx src/mcp/index.ts --http",
+    "example:quickstart": "tsx examples/quickstart.ts",
+    "example:ws": "tsx examples/ws-streams.ts",
+    "example:paper": "tsx examples/paper-trading.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

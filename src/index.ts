@@ -58,5 +58,7 @@ export {
   tradingTools,
   wsTools,
   getBufferedWsEvents,
+  createPaperContext,
+  paperTools,
 } from './tools/index.js';
 export { createBinanceMcpServer } from './mcp/server.js';
