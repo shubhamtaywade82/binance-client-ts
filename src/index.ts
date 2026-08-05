@@ -23,6 +23,15 @@ export type {
 } from './resources/FuturesOps.js';
 export { UserDataStream } from './resources/UserDataStream.js';
 
+export { PaperTradingEngine } from './paper/PaperTradingEngine.js';
+export type {
+  PaperAccount,
+  PaperOrder,
+  PaperPosition,
+  PaperPositionSide,
+  PaperTradingOptions,
+} from './paper/PaperTradingEngine.js';
+
 export { BaseWS } from './ws/BaseWS.js';
 export type { BaseWSOptions } from './ws/BaseWS.js';
 export { SpotMarketWS } from './ws/SpotMarketWS.js';

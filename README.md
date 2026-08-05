@@ -1,34 +1,28 @@
-# 📦 binance-client-ts
+# binance-client-ts
 
-TypeScript client for Binance **Spot + USD-M Futures** — market data, account, trading,
-algo orders, user data streams, signed WebSocket API, and a typed **LLM tool layer + MCP
-server + agent skills** for AI trading agents.
+TypeScript client for Binance — **Spot + USD-M Futures**, REST + WebSocket, public market data
+and authenticated trading, with zod-validated typed responses.
 
-- **REST**: public market data + signed account/trade (orders, batch, algo, leverage, margin).
-- **WebSocket**: market streams (`/public`, `/market`, `/private`), user data stream, and
-  request/response **WebSocket API** (`order.place`, `account.balance`, …).
-- **zod-validated** responses, **bottleneck** rate limiting, granular error classes.
-- **LLM tooling**: 80+ framework-agnostic tools convertible to OpenAI, Anthropic, or MCP formats.
-- **MCP server**: `binance-usdm-mcp` (stdio + HTTP health) exposing all tools.
-- **Skills**: 7 Binance Skills-Hub skills under `skills/`.
+Canonical Binance client for the `trading-workspace` `sdk/` directory (mirrors `sdk/dhanhq-ts`'s
+role for DhanHQ). Feature-parity with `binance-client-js` (REST + WS), with typed schemas.
 
 ## Install
 
-```bash
-npm i binance-client-ts
-# dev
-npm i -D binance-client-ts@file:./path   # or git+https://github.com/shubhamtaywade82/binance-client-ts
+Not yet published. Reference via a local path or git URL, e.g.:
+
+```json
+{ "dependencies": { "binance-client-ts": "file:../binance-client-ts" } }
 ```
 
-## Quick start
+## Usage
 
-```ts
+```typescript
 import { BinanceClient } from 'binance-client-ts';
 
 const client = new BinanceClient({
-  apiKey: process.env.BINANCE_API_KEY,
-  apiSecret: process.env.BINANCE_API_SECRET,
-  testnet: true, // -> testnet.binancefuture.com
+  apiKey: 'YOUR_API_KEY',      // only needed for authenticated endpoints
+  apiSecret: 'YOUR_API_SECRET',
+  testnet: true,               // or demo: true; defaults to live
 });
 
 // Public market data (no keys needed)
@@ -67,33 +61,23 @@ const order = await client.futures.trading.createOrder({
   quantity: 0.01,
   price: 60000,
   timeInForce: 'GTC',
-  });
-  await client.futures.ops.closePosition({ symbol: 'BTCUSDT' });
+});
+await client.futures.trading.cancelOrder('BTCUSDT', { orderId: order.orderId });
 
-  // Trading
-  const order = await client.futures.trading.createOrder({
-    symbol: 'BTCUSDT',
-    side: 'BUY',
-    type: 'LIMIT',
-    quantity: 0.01,
-    price: 60000,
-    timeInForce: 'GTC',
-  });
-
-// WebSocket
-client.futures.ws.subscribe(['btcusdt@kline_1m', 'btcusdt@markPrice@1s']);
+// Market WebSocket (combined stream, auto-reconnect)
+client.futures.ws.subscribe([
+  client.futures.ws.kline('SOLUSDT', '15m'),
+  client.futures.ws.markPrice('ETHUSDT', '1s'),
+]);
 client.futures.ws.on('message', (stream, payload) => console.log(stream, payload));
 
-// User data stream
-await client.startUserStream();
-client.futures.wsUser.on('message', (event) => /* ACCOUNT_UPDATE / ORDER_TRADE_UPDATE */);
+// User data stream (listenKey lifecycle managed automatically)
+const listenKey = await client.startUserStream();
+client.futures.wsUser.on('ORDER_TRADE_UPDATE', (event) => console.log(event.o));
+client.futures.wsUser.on('ACCOUNT_UPDATE', (event) => console.log(event.a));
+client.closeUserStream();
 ```
 
-
-## LLM tools (wire once, use everywhere)
-
-```ts
-import { BinanceClient, createFuturesToolkit, toolkitToFormats } from 'binance-client-ts';
 ## API Surface
 
 ### Spot (`client.spot`)
@@ -130,49 +114,37 @@ import { BinanceClient, createFuturesToolkit, toolkitToFormats } from 'binance-c
 `BinanceError` base, `BinanceAuthError`, `BinanceApiError` (code + status), `RateLimitError`,
 `NetworkError`.
 
-## Development
+### Paper trading
 
-const client = new BinanceClient({ apiKey, apiSecret });
-const tk = createFuturesToolkit(client);
+Simulates fills against live public prices — nothing is sent to the exchange. Margin is locked
+at the requested leverage and released pro-rata as a position is reduced.
 
-// OpenAI / Anthropic / raw JSON-schema
-const { openai, anthropic, mcp } = toolkitToFormats(tk);
+```typescript
+import { PaperTradingEngine } from 'binance-client-ts';
 
-// Call a tool directly
-await tk.tools.find((t) => t.name === 'futures_new_order')!.handler(
-  { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.001, newClientOrderId: 'x' },
-  { env: 'live', isSigned: true },
-);
+const engine = new PaperTradingEngine({ initialBalance: 10_000 });
+await engine.placeOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.05, leverage: 5 });
+await engine.updatePositions();               // re-mark against live prices
+const close = await engine.placeOrder({ symbol: 'BTCUSDT', side: 'SELL', type: 'MARKET', quantity: 0.05 });
+console.log(close.realizedPnl, engine.getAccountInfo().balance);
 ```
 
-## MCP server
+## Examples
 
 ```bash
-# stdio (Claude Desktop / Cursor)
-npx binance-usdm-mcp
-
-# HTTP health on :PORT
-BINANCE_API_KEY=k BINANCE_API_SECRET=s npx binance-usdm-mcp --http
-# or
-npm run mcp         # stdio
-npm run mcp:http    # http
+npx tsx examples/quickstart.ts      # market data, symbol rules, risk-based sizing
+npx tsx examples/ws-streams.ts      # live kline / trade / mark-price / book streams
+npx tsx examples/paper-trading.ts   # simulated position lifecycle
 ```
 
-## Scripts
+## Development
 
-| Command | Purpose |
-| --------- | --------- |
-| `npm run build` | tsup (ESM + CJS + types; MCP externalized) |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm test` | vitest (74 unit tests, mocked via msw) |
-| `npm run smoke` | live public-endpoint smoke test |
-| `npm run mcp` / `npm run mcp:http` | Run the MCP server |
+```bash
+npm install
+npm test        # vitest, HTTP/WS mocked
+npm run typecheck
+npm run build   # tsup -> dist/ (ESM + CJS + .d.ts)
+npm run smoke   # hits live public Binance endpoints, no keys needed
+```
 
-## API surface (endpoints)
-
-See `skills/derivatives-trading-usds/SKILL.md` for the full REST + stream catalogue, including
-the 2026 WebSocket URL split (`/public`, `/market`, `/private`).
-
-## License
-
-MIT · Symbols: `BTCUSDT`, `ETHUSDT`, `SOLUSDT`, `XRPUSDT` · Testnet via `testnet.binancefuture.com`.
+CI runs typecheck, build and tests on Node 18/20/22; pushing a `v*` tag publishes to npm.

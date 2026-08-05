@@ -12,5 +12,42 @@ export function createBinanceMcpServer(client: BinanceClient): McpServer {
     }));
   });
 
+  registerResources(server, client);
+
   return server;
+}
+
+/**
+ * Reference data exposed as MCP resources rather than tools: hosts can attach these
+ * to context directly, without the model having to decide to call something first.
+ */
+function registerResources(server: McpServer, client: BinanceClient): void {
+  const json = (uri: string, data: unknown) => ({
+    contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(data, null, 2) }],
+  });
+
+  server.registerResource(
+    'futures-symbols',
+    'binance://futures/symbols',
+    {
+      title: 'Futures Trading Symbols',
+      description: 'Every tradeable USD-M futures symbol with its contract type and status',
+      mimeType: 'application/json',
+    },
+    async (uri) => {
+      const info = await client.futures.market.exchangeInfo();
+      return json(uri.href, info.symbols);
+    },
+  );
+
+  server.registerResource(
+    'futures-premium-index',
+    'binance://futures/premium-index',
+    {
+      title: 'Premium Index',
+      description: 'Mark price, index price and funding rate across all USD-M pairs',
+      mimeType: 'application/json',
+    },
+    async (uri) => json(uri.href, await client.futures.data.assetIndex()),
+  );
 }

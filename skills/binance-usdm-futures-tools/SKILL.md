@@ -172,6 +172,16 @@ Order types: `LIMIT`, `MARKET`, `STOP`, `STOP_MARKET`, `TAKE_PROFIT`, `TAKE_PROF
 | `futures_convert_accept_quote` | Accept a Convert quote by `quoteId`. |
 | `futures_convert_order_status` | Query a Convert order by `orderId` or `quoteId`. |
 
+## MCP Resources
+
+Besides tools, the server exposes reference data as MCP resources, which a host can attach to
+context directly without the model calling anything first:
+
+| URI | Contents |
+|-----|----------|
+| `binance://futures/symbols` | Every tradeable USD-M symbol with contract type and status. |
+| `binance://futures/premium-index` | Mark/index price and funding across all pairs. |
+
 ## LLM Wiring (one-time)
 - **MCP server:** `npx binance-usdm-mcp` (stdio) or `BINANCE_API_KEY=… BINANCE_API_SECRET=… npx binance-usdm-mcp --http` (HTTP health on `:PORT`).
   Configure the MCP host (Claude Desktop / Cursor / Claude Code) with
