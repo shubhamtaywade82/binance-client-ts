@@ -37,6 +37,27 @@ trading-agent analysis. Do **not** use for spot, COIN-M, or Delta-Exchange conte
    before sizing; confirm the symbol is TRADING.
 5. **Depth + klines**: order-book snapshots come from `futures_order_book`; live updates come as deltas
    over WebSocket via `futures_ws_subscribe` + `futures_ws_events` and must be **applied to the snapshot**.
+6. **Prefer a composite over a chain.** Where a composite tool exists (below), use it instead of chaining
+   primitives — they exist to keep tick/step arithmetic and mode-dependent order fields out of the model.
+
+## Composite Tools (prefer these)
+
+Each fans out over several endpoints and returns one answer. Round-off and mode handling live here,
+not in the model.
+
+| Tool | Replaces | Why it exists |
+|------|----------|---------------|
+| `futures_symbol_rules` | `futures_exchange_info` + filter parsing | Flattens the `filters` array into typed tickSize / stepSize / minQty / maxQty / minNotional. |
+| `futures_quantize` | manual rounding | Rounds a price to the tick and a quantity to the step, returning **exchange-ready strings**. Off-tick values are rejected with `-1111`. |
+| `futures_size_position` | exchangeInfo + markPrice + balance + arithmetic | Turns a risk budget (`riskAmount` or `riskPct`) plus a stop into a step-aligned quantity, and reports every failed constraint (min notional, lot bounds, wrong-side stop) instead of quietly adjusting risk. |
+| `futures_close_position` | `futures_position_risk` + `futures_new_order` | Derives the closing side from the position sign and picks `reduceOnly` (one-way) vs `positionSide` (hedge) — Binance rejects the wrong one. Supports `portion` and `dryRun`. |
+| `futures_market_snapshot` | 4 market-data calls | 24h stats + mark/funding + open interest + long/short in one call; a failing feed degrades to an `error` field. |
+| `futures_account_overview` | balance + positions + open orders | Funded balances, non-flat positions, working orders, and PnL/notional totals. |
+| `futures_place_bracket_order` | 3 `futures_new_order` calls | Entry + stop-loss + optional take-profit, all tick-quantized. If a protective leg fails it returns `protectionComplete: false`; the entry is **not** auto-cancelled since it may already have filled — resolve manually. |
+
+**Never do tick/step arithmetic yourself.** `futures_quantize` or `futures_size_position` returns the
+string to send. Floating-point rounding in the model is the most common source of `-1111` (precision)
+and `-4164` (min notional) rejections.
 
 ## Public — Market Data Tools (unsigned)
 
@@ -171,6 +192,21 @@ Order types: `LIMIT`, `MARKET`, `STOP`, `STOP_MARKET`, `TAKE_PROFIT`, `TAKE_PROF
 
 ## Notes
 - `recvWindow` is fixed to 5000 ms; increase only if server clock skew is observed.
-- All price/qty strings are passed through un-rounded; the model must round to
-  symbol step sizes derived from `futures_exchange_info` before sending orders.
+- The **primitive** order tools (`futures_new_order`, `futures_modify_order`, …) pass price/qty through
+  un-rounded. Get the values from `futures_quantize` / `futures_size_position` first, or call
+  `futures_place_bracket_order`, which quantizes internally.
 - WebSocket topics are always lowercase; symbol-less aggregate topics begin with `!`.
+
+## Layering
+
+```
+resources (client.futures.market|data|account|trading)   REST, one endpoint per method, typed
+        ↑
+client.futures.ops                                       composites — fan-out + arithmetic
+        ↑
+tools (91 primitive + 7 composite)                       LLM/MCP surface
+```
+
+Composites compose the **resource** layer, never other tool handlers: handlers return formatted JSON
+strings, so handler-to-handler calls would add a parse/stringify round-trip per step and lose the
+zod-parsed numeric types. Anything new that needs more than one endpoint belongs in `FuturesOps`.
