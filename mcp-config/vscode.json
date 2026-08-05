@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "binance-usdm-futures": {
+      "command": "npx",
+      "args": ["binance-usdm-mcp"],
+      "env": {
+        "BINANCE_API_KEY": "YOUR_API_KEY",
+        "BINANCE_API_SECRET": "YOUR_API_SECRET",
+        "BINANCE_TESTNET": "true"
+      }
+    }
+  }
+}

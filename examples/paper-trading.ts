@@ -1,61 +1,25 @@
-/**
- * Paper trading against live prices — nothing is ever sent to the exchange.
- *
- * Run: npx tsx examples/paper-trading.ts
- * No API keys are needed; prices come from the public market endpoints.
- */
-import { PaperTradingEngine } from '../src/index.js';
-
-function money(value: number): string {
-  return `${value >= 0 ? '+' : ''}${value.toFixed(2)}`;
-}
+import { BinanceClient, createPaperContext, paperTools } from '../src/index.js';
 
 async function main(): Promise<void> {
-  const engine = new PaperTradingEngine({ initialBalance: 10_000 });
-  const symbol = 'BTCUSDT';
+  const client = new BinanceClient({ testnet: true });
+  const ctx = createPaperContext(client, { balance: 50000 });
+  const tools = paperTools(ctx);
 
-  const entryPrice = await engine.getMarketPrice(symbol);
-  console.log(`${symbol} mark price: ${entryPrice}`);
+  const init = tools.find((t) => t.name === 'paper_init')!;
+  await init.handler({ balance: 50000 }, { env: 'testnet', isSigned: false });
 
-  // Open a 5x long. Margin locked is notional / leverage, not the full notional.
-  const open = await engine.placeOrder({
-    symbol,
-    side: 'BUY',
-    type: 'MARKET',
-    quantity: 0.05,
-    leverage: 5,
-  });
-  console.log(`opened  #${open.orderId}  ${open.side} ${open.quantity} @ ${open.avgFillPrice}`);
+  const open = tools.find((t) => t.name === 'paper_open_position')!;
+  const opened = await open.handler({ symbol: 'SOLUSDT', side: 'LONG', quantity: 100 }, { env: 'testnet', isSigned: false });
+  console.log('Opened position:', opened);
 
-  const position = engine.getPosition(symbol);
-  console.log(`position ${position?.side} qty=${position?.quantity} margin=${position?.margin.toFixed(2)}`);
+  const positions = tools.find((t) => t.name === 'paper_positions')!;
+  console.log('Positions (marked-to-market):', await positions.handler({}, { env: 'testnet', isSigned: false }));
 
-  let account = engine.getAccountInfo();
-  console.log(`balance ${account.balance.toFixed(2)}  available ${account.availableBalance.toFixed(2)}`);
-
-  // Re-mark against the live price; balance does not move until something closes.
-  await engine.updatePositions();
-  account = engine.getAccountInfo();
-  console.log(`unrealized ${money(account.unrealizedPnl)}  equity ${account.totalWalletBalance.toFixed(2)}`);
-
-  // Close half, then the rest — margin is released pro-rata each time.
-  const half = await engine.placeOrder({ symbol, side: 'SELL', type: 'MARKET', quantity: 0.025 });
-  console.log(`closed half  realized ${money(half.realizedPnl)}`);
-
-  const rest = await engine.placeOrder({ symbol, side: 'SELL', type: 'MARKET', quantity: 0.025 });
-  console.log(`closed rest  realized ${money(rest.realizedPnl)}`);
-
-  account = engine.getAccountInfo();
-  console.log(
-    `\nfinal  balance ${account.balance.toFixed(2)}  ` +
-      `realized ${money(account.realizedPnl)}  ` +
-      `available ${account.availableBalance.toFixed(2)}  ` +
-      `open positions ${engine.getOpenPositions().length}`,
-  );
-  console.log(`orders placed: ${engine.getOrderHistory().length}`);
+  const close = tools.find((t) => t.name === 'paper_close_position')!;
+  console.log('Close event:', await close.handler({ symbol: 'SOLUSDT' }, { env: 'testnet', isSigned: false }));
 }
 
-main().catch((error) => {
-  console.error(error);
+main().catch((err) => {
+  console.error(err);
   process.exit(1);
 });
