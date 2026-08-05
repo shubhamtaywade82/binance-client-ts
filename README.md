@@ -114,6 +114,29 @@ client.closeUserStream();
 `BinanceError` base, `BinanceAuthError`, `BinanceApiError` (code + status), `RateLimitError`,
 `NetworkError`.
 
+### Paper trading
+
+Simulates fills against live public prices — nothing is sent to the exchange. Margin is locked
+at the requested leverage and released pro-rata as a position is reduced.
+
+```typescript
+import { PaperTradingEngine } from 'binance-client-ts';
+
+const engine = new PaperTradingEngine({ initialBalance: 10_000 });
+await engine.placeOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.05, leverage: 5 });
+await engine.updatePositions();               // re-mark against live prices
+const close = await engine.placeOrder({ symbol: 'BTCUSDT', side: 'SELL', type: 'MARKET', quantity: 0.05 });
+console.log(close.realizedPnl, engine.getAccountInfo().balance);
+```
+
+## Examples
+
+```bash
+npx tsx examples/quickstart.ts      # market data, symbol rules, risk-based sizing
+npx tsx examples/ws-streams.ts      # live kline / trade / mark-price / book streams
+npx tsx examples/paper-trading.ts   # simulated position lifecycle
+```
+
 ## Development
 
 ```bash
@@ -123,3 +146,5 @@ npm run typecheck
 npm run build   # tsup -> dist/ (ESM + CJS + .d.ts)
 npm run smoke   # hits live public Binance endpoints, no keys needed
 ```
+
+CI runs typecheck, build and tests on Node 18/20/22; pushing a `v*` tag publishes to npm.
