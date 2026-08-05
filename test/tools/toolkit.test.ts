@@ -93,15 +93,14 @@ describe('futures toolkit', () => {
     expect(srv).toBeTruthy();
   });
 
-  it('maps newClientOrderId to clientOrderId when placing an order', async () => {
+  it('sends newClientOrderId as-is when placing an order', async () => {
     const c = client();
     const tk = createFuturesToolkit(c);
-    const captured: Record<string, string> = {};
     server.use(
       http.post('https://fapi.binance.com/fapi/v1/order', ({ request }) => {
         const url = new URL(request.url, 'https://fapi.binance.com');
         expect(url.searchParams.get('symbol')).toBe('BTCUSDT');
-        expect(url.searchParams.get('clientOrderId')).toBe('my-id');
+        expect(url.searchParams.get('newClientOrderId')).toBe('my-id');
         expect(url.searchParams.get('side')).toBe('BUY');
         expect(url.searchParams.get('type')).toBe('LIMIT');
         return HttpResponse.json({

@@ -40,19 +40,13 @@ export function tradingTools(client: BinanceClient): ToolDefinition[] {
       name: 'futures_new_order',
       description: 'Place a new futures order. Types: LIMIT, MARKET, STOP, STOP_MARKET, TAKE_PROFIT, TAKE_PROFIT_MARKET, TRAILING_STOP_MARKET. Use STOP_MARKET as the take-profit/stop-loss trigger and LIMIT for the actual fill. Signed.',
       inputSchema: orderParamsSchema,
-      handler: async (args) => {
-        const { newClientOrderId, ...rest } = { ...args, symbol: normalizeSymbol(args.symbol) };
-        return textResult(await t.createOrder({ ...rest, clientOrderId: newClientOrderId }));
-      },
+      handler: async (args) => textResult(await t.createOrder({ ...args, symbol: normalizeSymbol(args.symbol) })),
     },
     {
       name: 'futures_test_order',
       description: 'Validate a new order without submitting it. Returns 200 on success; use to validate fields and margin before real orders. Signed.',
       inputSchema: orderParamsSchema,
-      handler: async (args) => {
-        const { newClientOrderId, ...rest } = { ...args, symbol: normalizeSymbol(args.symbol) };
-        return textResult(await t.createTestOrder({ ...rest, clientOrderId: newClientOrderId }));
-      },
+      handler: async (args) => textResult(await t.createTestOrder({ ...args, symbol: normalizeSymbol(args.symbol) })),
     },
     {
       name: 'futures_get_order',
@@ -109,10 +103,7 @@ export function tradingTools(client: BinanceClient): ToolDefinition[] {
         positionSide,
         newClientOrderId: z.string().optional(),
       }),
-      handler: async (args) => {
-        const { newClientOrderId, ...rest } = { ...args, symbol: normalizeSymbol(args.symbol) };
-        return textResult(await t.modifyOrder({ ...rest, clientOrderId: newClientOrderId }));
-      },
+      handler: async (args) => textResult(await t.modifyOrder({ ...args, symbol: normalizeSymbol(args.symbol) })),
     },
     {
       name: 'futures_order_modify_history',
@@ -126,11 +117,8 @@ export function tradingTools(client: BinanceClient): ToolDefinition[] {
       description: 'Place up to 5 orders in one request (array of order objects, max 30 per minute per symbol). Signed.',
       inputSchema: z.object({ orders: z.array(orderParamsSchema).min(1).max(5) }),
       handler: async (args) => {
-        const mapped = (args.orders as any[]).map((o) => {
-          const { newClientOrderId, ...rest } = o;
-          return { ...rest, symbol: normalizeSymbol(rest.symbol), clientOrderId: newClientOrderId };
-        });
-        return textResult(await t.createBatchOrders(mapped as any[]));
+        const mapped = args.orders.map((o: z.infer<typeof orderParamsSchema>) => ({ ...o, symbol: normalizeSymbol(o.symbol) }));
+        return textResult(await t.createBatchOrders(mapped));
       },
     },
     {

@@ -37,7 +37,7 @@ export const CreateOrderParamsSchema = z.object({
   stopPrice: z.union([z.string(), z.number()]).optional(),
   reduceOnly: z.boolean().optional(),
   positionSide: z.enum(['BOTH', 'LONG', 'SHORT']).optional(),
-  clientOrderId: z.string().optional(),
+  newClientOrderId: z.string().optional(),
   closePosition: z.boolean().optional(),
   newOrderRespType: z.enum(['ACK', 'RESULT']).optional(),
   priceProtect: z.boolean().optional(),
