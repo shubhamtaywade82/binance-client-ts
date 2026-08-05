@@ -69,7 +69,7 @@ const order = await client.futures.trading.createOrder({
   timeInForce: 'GTC',
   });
   await client.futures.ops.closePosition({ symbol: 'BTCUSDT' });
-  
+
   // Trading
   const order = await client.futures.trading.createOrder({
     symbol: 'BTCUSDT',
@@ -89,13 +89,11 @@ await client.startUserStream();
 client.futures.wsUser.on('message', (event) => /* ACCOUNT_UPDATE / ORDER_TRADE_UPDATE */);
 ```
 
-<<<<<<< HEAD
 
 ## LLM tools (wire once, use everywhere)
 
 ```ts
 import { BinanceClient, createFuturesToolkit, toolkitToFormats } from 'binance-client-ts';
-=======
 ## API Surface
 
 ### Spot (`client.spot`)
@@ -133,7 +131,6 @@ import { BinanceClient, createFuturesToolkit, toolkitToFormats } from 'binance-c
 `NetworkError`.
 
 ## Development
->>>>>>> 2274ff75aabcebe53a87f4f00cc01a413cd41fbd
 
 const client = new BinanceClient({ apiKey, apiSecret });
 const tk = createFuturesToolkit(client);
