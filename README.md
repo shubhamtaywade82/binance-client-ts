@@ -34,6 +34,25 @@ const oi = await client.futures.data.openInterest('XRPUSDT');
 const balance = await client.futures.account.balance();
 const positions = await client.futures.account.positionRisk();
 
+// Composite ops — sizing/rounding handled for you
+const sizing = await client.futures.ops.sizePosition({
+  symbol: 'BTCUSDT',
+  side: 'BUY',
+  stopPrice: 59000,
+  riskAmount: 100,   // or riskPct: 1
+  leverage: 10,
+});
+if (sizing.ok) {
+  await client.futures.ops.placeBracketOrder({
+    symbol: 'BTCUSDT',
+    side: 'BUY',
+    quantity: sizing.quantityStr,
+    stopLossPrice: 59000,
+    takeProfitPrice: 63000,
+  });
+}
+await client.futures.ops.closePosition({ symbol: 'BTCUSDT' });
+
 // Trading
 const order = await client.futures.trading.createOrder({
   symbol: 'BTCUSDT',
@@ -66,13 +85,20 @@ client.closeUserStream();
 - `ws` — market WebSocket streams
 
 ### Futures (`client.futures`)
-- `market` — public REST market data (klines, tickers, depth, trades, aggTrades, exchangeInfo)
-- `data` — futures analytics (funding rate, premium index, open interest, long/short ratios)
+- `market` — public REST market data (klines incl. continuous/index/mark/premium-index variants,
+  tickers, depth incl. RPI depth, trades, aggTrades, exchangeInfo)
+- `data` — futures analytics (funding rate, premium index, open interest, long/short ratios, basis,
+  delivery price, insurance fund balance, ADL risk, force orders, index constituents, delist schedule)
 - `account` — authenticated account endpoints (balance v2/v3, account v2/v3, positionRisk v2/v3,
-  income, userTrades, commission, leverage brackets, position mode, multi-assets margin, fee burn,
-  API trading status, position margin history, rate limit orders, data downloads)
+  account config, income, userTrades, commission, leverage brackets, position mode, multi-assets
+  margin, fee burn, API trading status, portfolio margin account info, position margin history,
+  rate limit orders, order/trade/income data downloads)
 - `trading` — order lifecycle (create/test/get/cancel/modify, open/all orders, batch orders,
-  algo orders, order-modify history, leverage/margin/countdown-cancel config)
+  algo orders, order-modify history, leverage/margin/countdown-cancel config, Convert
+  quote/accept/status)
+- `ops` — composite operations layered over the above: `symbolRules` (typed tick/step/notional
+  filters), `quantize`, `sizePosition` (risk-based sizing), `closePosition`, `marketSnapshot`,
+  `accountOverview`, `placeBracketOrder`
 - `userStream` — listenKey lifecycle (create / keep-alive / close)
 - `ws` — market WebSocket streams (kline, continuous/index/mark klines, aggTrade, trade, depth,
   ticker, rolling-window ticker, mark price, book ticker, mini ticker, liquidations, composite

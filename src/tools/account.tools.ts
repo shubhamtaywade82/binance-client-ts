@@ -149,5 +149,29 @@ export function accountTools(client: BinanceClient): ToolDefinition[] {
       inputSchema: z.object({ downloadId: z.string().min(1) }),
       handler: async ({ downloadId }) => textResult(await a.getTradeDownloadStatus(downloadId)),
     },
+    {
+      name: 'futures_account_config',
+      description: 'Get futures account configuration: fee tier, trading permissions, dual-side position setting (signed).',
+      inputSchema: z.object({}),
+      handler: async () => textResult(await a.accountConfig()),
+    },
+    {
+      name: 'futures_portfolio_margin_account_info',
+      description: 'Get Portfolio Margin account info for an asset: cross margin balance and liability (signed).',
+      inputSchema: z.object({ asset: z.string().min(1).describe('Asset, e.g. USDT') }),
+      handler: async ({ asset }) => textResult(await a.pmAccountInfo(asset)),
+    },
+    {
+      name: 'futures_request_income_download',
+      description: 'Request a futures income/transaction-history download (async). Returns a downloadId (signed).',
+      inputSchema: z.object({ startTime: startTime.unwrap(), endTime: endTime.unwrap() }),
+      handler: async ({ startTime, endTime }) => textResult(await a.requestIncomeDownload({ startTime, endTime })),
+    },
+    {
+      name: 'futures_income_download_status',
+      description: 'Get the futures income/transaction-history download link by downloadId (signed).',
+      inputSchema: z.object({ downloadId: z.string().min(1) }),
+      handler: async ({ downloadId }) => textResult(await a.getIncomeDownloadStatus(downloadId)),
+    },
   ];
 }

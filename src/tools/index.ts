@@ -1,5 +1,6 @@
 import type { BinanceClient } from '../client/BinanceClient.js';
 import { accountTools } from './account.tools.js';
+import { derivedTools } from './derived.tools.js';
 import { marketDataTools } from './market-data.tools.js';
 import { tradingTools } from './trading.tools.js';
 import { wsTools } from './ws.tools.js';
@@ -11,6 +12,7 @@ export { toJsonSchema, toOpenAITool, toAnthropicTool, toMCPTool, toToolList, tex
 export { marketDataTools } from './market-data.tools.js';
 export { accountTools } from './account.tools.js';
 export { tradingTools } from './trading.tools.js';
+export { derivedTools } from './derived.tools.js';
 export { wsTools, getBufferedWsEvents, clearBufferedWsEvents } from './ws.tools.js';
 
 export interface FuturesToolkit {
@@ -20,6 +22,8 @@ export interface FuturesToolkit {
   account: ToolDefinition[];
   trading: ToolDefinition[];
   ws: ToolDefinition[];
+  /** Composite tools that fan out over several endpoints. */
+  derived: ToolDefinition[];
 }
 
 export function createFuturesToolkit(client: BinanceClient): FuturesToolkit {
@@ -27,13 +31,15 @@ export function createFuturesToolkit(client: BinanceClient): FuturesToolkit {
   const account = accountTools(client);
   const trading = tradingTools(client);
   const ws = wsTools(client);
+  const derived = derivedTools(client);
   return {
     client,
-    tools: [...market, ...account, ...trading, ...ws],
+    tools: [...market, ...account, ...trading, ...ws, ...derived],
     market,
     account,
     trading,
     ws,
+    derived,
   };
 }
 

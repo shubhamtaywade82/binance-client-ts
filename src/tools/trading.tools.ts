@@ -224,5 +224,35 @@ export function tradingTools(client: BinanceClient): ToolDefinition[] {
       handler: async ({ symbol, startTime, endTime, limit }) =>
         textResult(await t.getAllAlgoOrders(normalizeSymbol(symbol), { startTime, endTime, limit })),
     },
+    {
+      name: 'futures_convert_exchange_info',
+      description: 'List asset pairs eligible for futures Convert, optionally filtered by fromAsset/toAsset.',
+      inputSchema: z.object({ fromAsset: z.string().optional(), toAsset: z.string().optional() }),
+      handler: async ({ fromAsset, toAsset }) => textResult(await t.convertExchangeInfo({ fromAsset, toAsset })),
+    },
+    {
+      name: 'futures_convert_get_quote',
+      description: 'Request a Convert quote between two assets (quote expires quickly; accept with futures_convert_accept_quote). Signed.',
+      inputSchema: z.object({
+        fromAsset: z.string().min(1),
+        toAsset: z.string().min(1),
+        fromAmount: z.number().positive().optional(),
+        toAmount: z.number().positive().optional(),
+        validTime: z.enum(['10s', '30s', '1m', '2m']).optional(),
+      }),
+      handler: async (args) => textResult(await t.convertGetQuote(args)),
+    },
+    {
+      name: 'futures_convert_accept_quote',
+      description: 'Accept a previously requested Convert quote by quoteId. Signed.',
+      inputSchema: z.object({ quoteId: z.string().min(1) }),
+      handler: async ({ quoteId }) => textResult(await t.convertAcceptQuote(quoteId)),
+    },
+    {
+      name: 'futures_convert_order_status',
+      description: 'Query the status of a Convert order by orderId or quoteId. Signed.',
+      inputSchema: z.object({ orderId: z.string().optional(), quoteId: z.string().optional() }),
+      handler: async ({ orderId, quoteId }) => textResult(await t.convertOrderStatus({ orderId, quoteId })),
+    },
   ];
 }
