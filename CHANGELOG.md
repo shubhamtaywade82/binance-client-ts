@@ -1,58 +1,27 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to `binance-client-ts` are documented here.
+Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
-
+## [2.2.0] - 2026-08-04
 ### Added
-- **MCP Server** - Full Model Context Protocol server implementation with 10 trading tools and 2 resources
-  - Tools: `get_market_price`, `get_kline_data`, `get_order_book`, `place_order`, `cancel_order`, 
-    `get_position`, `update_leverage`, `get_account_info`, `get_funding_rate`, `get_open_interest`, 
-    `get_liquidation_orders`
-  - Resources: `binance://futures/symbols`, `binance://futures/premium-index`
-- **Paper Trading Engine** - Local simulation engine for SOLUSDT, ETHUSDT, XRPUSDT
-  - No API keys required
-  - Real-time price feeds from Binance
-  - Position tracking with unrealized PnL calculation
-  - Order history and account management
-- **Examples Directory** - Runnable demo scripts
-  - `quickstart.ts` - Market data and exchange info demo
-  - `ws-streams.ts` - WebSocket mark price streaming demo
-  - `paper-trading.ts` - Paper trading engine demonstration
-- **CI/CD Pipeline** - GitHub Actions workflow
-  - Type checking, build, and test on multiple Node.js versions (18, 20, 22)
-  - Automated npm publish on version tags
-- **Environment Template** - `.env.example` for configuration
+- **LLM tool layer** (`src/tools/`): 80 framework-agnostic tools (31 market / 22 account / 22 trading / 7 ws / 7 paper),
+  with OpenAI / Anthropic / MCP / JSON-schema adapters (`createFuturesToolkit`, `toolkitToFormats`).
+- **Paper-trading engine** (`src/tools/paper.tools.ts`): in-memory simulated positions with live pricing, no keys required.
+- **MCP server** (`src/mcp/`): `binance-usdm-mcp` binary, stdio + HTTP health transport, auto-registers all 80 tools.
+- **AI agent skills**: 7 Binance Skills-Hub skills under `skills/` (`derivatives-trading-usds`,
+  `derivatives-trading-usds-streams`, `futures-algo-trading`, `futures-portfolio-margin`,
+  plus updated `binance-futures-market-data` / `binance-futures-trading` / `binance-futures-paper-trading`).
+- `examples/quickstart.ts`, `examples/ws-streams.ts`, `examples/paper-trading.ts`.
+- `.env.example`, `CHANGELOG.md`, GitHub Actions CI workflow.
+- Package `bin` entry `binance-usdm-mcp`.
 
-### Changed
-- Updated dependencies to support MCP SDK integration
+### Dependencies
+- Added `@modelcontextprotocol/sdk` ^1.30.0.
 
-## [2.1.0] - 2026-08-03
+## [2.1.0]
+- Feature-parity with binance-client-js: orders, batch, algo, modify, leverage,
+  margin type, countdown-cancel, full market-data + user data streams, signed WS API.
 
-### Added
-- Full feature parity with binance-client-js
-- Zod v4 runtime validation for all responses
-- Rate limiting with bottleneck
-- Comprehensive error hierarchy (5 error types)
-- Auto-reconnect WebSockets with exponential backoff
-- Automatic listenKey lifecycle management
-- Signed WebSocket API for orders
-- Dual ESM + CJS build output
-- 74 unit tests with MSW mocks
-- Smoke test script for live endpoint validation
-
-### Features
-- Spot market data endpoints
-- USD-M Futures complete coverage:
-  - Market data (tickers, klines, order book, premium index, funding rates)
-  - Account management (balance, position risk, margin mode)
-  - Trading (place/cancel/modify orders, batch operations)
-  - Algo orders (conditional, trigger orders)
-  - User data streams with auto keep-alive
-- Utility functions: `buildPair`, `parsePair`, `calculateLiquidationPrice`, `nowSeconds`
-
-[Unreleased]: https://github.com/shubhamtaywade82/binance-client-ts/compare/v2.1.0...HEAD
-[2.1.0]: https://github.com/shubhamtaywade82/binance-client-ts/releases/tag/v2.1.0
+## [2.0.0]
+- TypeScript rewrite with zod-validated responses and typed WebSocket streams.

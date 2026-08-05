@@ -92,6 +92,30 @@ describe('FuturesMarket', () => {
     expect(details.baseAsset).toBe('BTC');
   });
 
+  it('fetches premium index klines', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/premiumIndexKlines', () =>
+        HttpResponse.json([[1, '1', '2', '0.5', '1.5', '10', 2, '15', 3, '5', '7.5', '0']]),
+      ),
+    );
+
+    const market = new FuturesMarket();
+    const klines = await market.premiumIndexKlines('BTCUSDT', '1h');
+    expect(klines[0]?.close).toBe(1.5);
+  });
+
+  it('fetches RPI order book depth', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/rpiDepth', () =>
+        HttpResponse.json({ lastUpdateId: 1, bids: [['60000', '1']], asks: [['60001', '1']] }),
+      ),
+    );
+
+    const market = new FuturesMarket();
+    const depth = await market.rpiDepth('BTCUSDT');
+    expect(depth.bids[0]?.price).toBe(60000);
+  });
+
   it('throws when instrument is not found', async () => {
     server.use(
       http.get('https://fapi.binance.com/fapi/v1/exchangeInfo', () =>

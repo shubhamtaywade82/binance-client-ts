@@ -20,6 +20,13 @@ export { FuturesData } from './resources/FuturesData.js';
 export type { FuturesDataEndpoints } from './resources/FuturesData.js';
 export { FuturesAccount } from './resources/FuturesAccount.js';
 export { FuturesTrading } from './resources/FuturesTrading.js';
+export { FuturesOps } from './resources/FuturesOps.js';
+export type {
+  SizePositionParams,
+  PositionSizing,
+  ClosePositionParams,
+  BracketOrderParams,
+} from './resources/FuturesOps.js';
 export { UserDataStream } from './resources/UserDataStream.js';
 
 export { BaseWS } from './ws/BaseWS.js';
@@ -33,9 +40,40 @@ export { WsApi } from './ws/WsApi.js';
 export type { WsApiOptions } from './ws/WsApi.js';
 
 export * from './types/market.types.js';
+export * from './types/filters.types.js';
 export * from './types/futures.types.js';
 export * from './types/ws.types.js';
 export * from './types/account.types.js';
 export * from './types/trading.types.js';
 export * from './types/userdata.types.js';
+export * from './types/userdata.types.js';
 export * from './errors/index.js';
+
+export {
+  createFuturesToolkit,
+  toolkitToFormats,
+  type FuturesToolkit,
+} from './tools/index.js';
+export type {
+  ToolDefinition,
+  ToolContext,
+} from './tools/types.js';
+export {
+  toJsonSchema,
+  toOpenAITool,
+  toAnthropicTool,
+  toMCPTool,
+  toToolList,
+  textResult,
+} from './tools/types.js';
+export {
+  marketDataTools,
+  accountTools,
+  tradingTools,
+  derivedTools,
+  wsTools,
+  getBufferedWsEvents,
+  createPaperContext,
+  paperTools,
+} from './tools/index.js';
+export { createBinanceMcpServer } from './mcp/server.js';

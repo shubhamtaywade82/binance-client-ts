@@ -102,16 +102,52 @@ describe('FuturesData', () => {
     expect((basis[0] as { basisRate: string }).basisRate).toBe('0.01');
   });
 
-  it('fetches force orders', async () => {
+  it('fetches force orders with signed auth', async () => {
     server.use(
       http.get('https://fapi.binance.com/fapi/v1/forceOrders', () =>
         HttpResponse.json([{ orderId: 1, symbol: 'BTCUSDT', status: 'FILLED' }]),
       ),
     );
 
-    const data = new FuturesData();
+    const data = new FuturesData({ apiKey: 'k', apiSecret: 's' });
     const orders = await data.forceOrders({ symbol: 'BTCUSDT' });
     expect((orders[0] as { orderId: number }).orderId).toBe(1);
+  });
+
+  it('fetches symbolConfig with signed auth', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/symbolConfig', () =>
+        HttpResponse.json([{ symbol: 'BTCUSDT', marginType: 'CROSSED', leverage: 20 }]),
+      ),
+    );
+
+    const data = new FuturesData({ apiKey: 'k', apiSecret: 's' });
+    const config = await data.symbolConfig('BTCUSDT');
+    expect((config[0] as { symbol: string }).symbol).toBe('BTCUSDT');
+  });
+
+  it('fetches insurance fund balance from the correct path', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/insuranceBalance', () =>
+        HttpResponse.json([{ symbols: ['BTCUSDT'], assets: [] }]),
+      ),
+    );
+
+    const data = new FuturesData();
+    const balance = await data.insuranceFundBalance({ symbol: 'BTCUSDT' });
+    expect(Array.isArray(balance)).toBe(true);
+  });
+
+  it('fetches delivery price', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/futures/data/delivery-price', () =>
+        HttpResponse.json([{ deliveryTime: 1, deliveryPrice: 60000 }]),
+      ),
+    );
+
+    const data = new FuturesData();
+    const prices = await data.deliveryPrice('BTCUSDT');
+    expect(prices[0]?.deliveryPrice).toBe(60000);
   });
 
   it('fetches delist schedule', async () => {

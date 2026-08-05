@@ -5,6 +5,7 @@ import { FuturesMarket } from '../resources/FuturesMarket.js';
 import { SpotMarket } from '../resources/SpotMarket.js';
 import { FuturesAccount } from '../resources/FuturesAccount.js';
 import { FuturesTrading } from '../resources/FuturesTrading.js';
+import { FuturesOps } from '../resources/FuturesOps.js';
 import { UserDataStream } from '../resources/UserDataStream.js';
 import { FuturesMarketWS } from '../ws/FuturesMarketWS.js';
 import { SpotMarketWS } from '../ws/SpotMarketWS.js';
@@ -36,6 +37,7 @@ export class BinanceClient {
     data: FuturesData;
     account: FuturesAccount;
     trading: FuturesTrading;
+    ops: FuturesOps;
     userStream: UserDataStream;
     ws: FuturesMarketWS;
     wsUser: FuturesUserWS;
@@ -85,18 +87,25 @@ export class BinanceClient {
       market: new SpotMarket(),
       ws: new SpotMarketWS(),
     };
+
+    const futuresMarket = new FuturesMarket(
+      new HttpClient({ baseURL: endpoints.restFapi, ...httpOptions }),
+      endpoints.restRoot,
+    );
+    const futuresData = new FuturesData({
+      restFapi: endpoints.restFapi,
+      restFuturesData: endpoints.restFuturesData,
+      ...httpOptions,
+    });
+    const futuresAccount = new FuturesAccount(this.authHttp);
+    const futuresTrading = new FuturesTrading(this.authHttp);
+
     this.futures = {
-      market: new FuturesMarket(
-        new HttpClient({ baseURL: endpoints.restFapi, ...httpOptions }),
-        endpoints.restRoot,
-      ),
-      data: new FuturesData({
-        restFapi: endpoints.restFapi,
-        restFuturesData: endpoints.restFuturesData,
-        ...httpOptions,
-      }),
-      account: new FuturesAccount(this.authHttp),
-      trading: new FuturesTrading(this.authHttp),
+      market: futuresMarket,
+      data: futuresData,
+      account: futuresAccount,
+      trading: futuresTrading,
+      ops: new FuturesOps(futuresMarket, futuresData, futuresAccount, futuresTrading),
       userStream: new UserDataStream(this.authHttp),
       ws: new FuturesMarketWS(endpoints.wsMarket),
       wsUser: new FuturesUserWS({
