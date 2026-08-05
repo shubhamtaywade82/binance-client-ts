@@ -16,10 +16,11 @@ host (MCP server `binance-usdm-mcp`, or a chat-ui's `createFuturesToolkit(...)` 
 ## Connection & Auth
 - Configure once via env: `BINANCE_API_KEY`, `BINANCE_API_SECRET`, `BINANCE_TESTNET=true` (→ `testnet.binancefuture.com`).
 - Public market-data tools are **unsigned**; account/trade/private tools are **signed** and require the keys above.
-- Base URLs (live): REST `https://fapi.binance.com`, WS `wss://fstream.binance.com`
-  (2026 split: `/public`, `/market`, `/private`), WS API `wss://ws-fapi.binance.com/ws-fapi/v1`.
-- Rate limits: **2400 weight/min** (REST, per IP) + **1200 orders/10s** + 300 orders/10s/uid (WS API). Respect
-  `X-MBX-USED-WEIGHT-1M` / `X-MBX-USED-WEIGHT-1M` headers; the SDK queues requests via Bottleneck.
+- Base URLs (live): REST `https://fapi.binance.com`, WS market streams `wss://fstream.binance.com/stream`,
+  WS user data `wss://fstream.binance.com/ws`, WS API `wss://ws-fapi.binance.com/ws-fapi/v1`.
+- Rate limits: **2400 weight/min** (REST, per IP) + **1200 orders/10s** + 300 orders/10s/uid (WS API). The SDK
+  paces every request through a local Bottleneck queue; it does not yet read back the
+  `X-MBX-USED-WEIGHT-*` / `X-MBX-ORDER-COUNT-*` response headers, so leave headroom under the caps above.
 
 ## Trigger
 Use these tools when the user asks about Binance **USD-M futures** (tickers, order books, trades, klines,
@@ -44,10 +45,13 @@ trading-agent analysis. Do **not** use for spot, COIN-M, or Delta-Exchange conte
 | `futures_ping` | Test connectivity (REST). |
 | `futures_server_time` | Server time in ms. |
 | `futures_exchange_info` | Symbol/metadata, contract types, filters, delivery dates. |
+| `futures_ticker_price` | Latest price for one symbol (v1). |
 | `futures_ticker_price_v2` | Latest price, one symbol or **all**. |
 | `futures_ticker_24hr` | 24h change stats (price, volume, open interest, high/low). |
+| `futures_book_ticker` | Best bid/ask for one symbol (v1). |
 | `futures_book_ticker_v2` | Best bid/ask, one symbol or **all**. |
 | `futures_order_book` | Order-book depth (limits 5/10/20/50/100/500/1000/5000). |
+| `futures_rpi_depth` | Retail Price Improvement order-book depth. |
 | `futures_recent_trades` | Most recent trades. |
 | `futures_historical_trades` | Older trades by `fromId`. |
 | `futures_agg_trades` | Compressed/aggregate trades. |
@@ -55,6 +59,8 @@ trading-agent analysis. Do **not** use for spot, COIN-M, or Delta-Exchange conte
 | `futures_continuous_klines` | Continuous-contract klines (perpetual/current_quarter/next_quarter). |
 | `futures_index_price_klines` | Index-price klines. |
 | `futures_mark_price_klines` | Mark-price klines. |
+| `futures_premium_index_klines` | Premium-index klines (mark price premium over index). |
+| `futures_trading_day_ticker` | Trading-day rolling ticker stats. |
 | `futures_mark_price` | Mark+index price, funding rate, next funding time. |
 | `futures_funding_rate_history` | Historical funding rates. |
 | `futures_funding_info` | Adjusted cap/floor/interval funding config. |
@@ -69,7 +75,10 @@ trading-agent analysis. Do **not** use for spot, COIN-M, or Delta-Exchange conte
 | `futures_composite_index_info` | Composite-index constituents (e.g. DEFIUSDT). |
 | `futures_insurance_balance` | Insurance-fund balance snapshots. |
 | `futures_index_price_constituents` | Exchange weights for an index price. |
-| `futures_adl_quantile` | Position ADL quantile (signed; kept here for discoverability). |
+| `futures_delivery_price` | Historical quarterly-contract settlement/delivery prices. |
+| `futures_convert_exchange_info` | Asset pairs eligible for futures Convert. |
+| `futures_symbol_adl_risk` | ADL risk level for a symbol or all symbols (signed). |
+| `futures_adl_quantile` | Position ADL quantile (signed). |
 | `futures_force_orders` | Force orders (liquidations/ADL) (signed). |
 
 ## Real-time — WebSocket Tools (public)
@@ -92,6 +101,7 @@ Subscribe → poll buffered events → act on the parsed payloads:
 |------|---------|
 | `futures_balance` | Balances (v3): asset, wallet/margin/unrealized. |
 | `futures_account` | Full account snapshot (v3). |
+| `futures_account_config` | Fee tier, trading permissions, dual-side position setting. |
 | `futures_position_risk` | Open positions (v3): entry, mark, liq, leverage, unrealized PnL. |
 | `futures_income_history` | Income (realized PnL, funding, commission,…). |
 | `futures_user_trades` | Filled trades for a symbol. |
@@ -101,10 +111,12 @@ Subscribe → poll buffered events → act on the parsed payloads:
 | `futures_fee_burn_status` / `futures_set_fee_burn` | BNB fee burn on/off. |
 | `futures_position_mode` / `futures_set_position_mode` | One-way vs hedge mode (30-day cooldown). |
 | `futures_api_trading_status` | Trading-rule indicators & disable intervals. |
+| `futures_portfolio_margin_account_info` | Portfolio Margin cross balance/liability for an asset. |
 | `futures_position_margin_history` | Isolated position margin add/reduce history. |
 | `futures_rate_limit_order` | Current order-rate limit usage. |
 | `futures_request_order_download` / `futures_order_download_status` | Async order-history export. |
 | `futures_request_trade_download` / `futures_trade_download_status` | Async trade-history export. |
+| `futures_request_income_download` / `futures_income_download_status` | Async income/transaction-history export. |
 
 ## Private — Trading Tools (signed, TRADE)
 
@@ -135,6 +147,9 @@ Order types: `LIMIT`, `MARKET`, `STOP`, `STOP_MARKET`, `TAKE_PROFIT`, `TAKE_PROF
 | `futures_get_algo_order` | Query an algo order. |
 | `futures_open_algo_orders` | All open algo orders. |
 | `futures_all_algo_orders` | Historical algo orders. |
+| `futures_convert_get_quote` | Request a Convert quote between two assets (expires quickly). |
+| `futures_convert_accept_quote` | Accept a Convert quote by `quoteId`. |
+| `futures_convert_order_status` | Query a Convert order by `orderId` or `quoteId`. |
 
 ## LLM Wiring (one-time)
 - **MCP server:** `npx binance-usdm-mcp` (stdio) or `BINANCE_API_KEY=… BINANCE_API_SECRET=… npx binance-usdm-mcp --http` (HTTP health on `:PORT`).

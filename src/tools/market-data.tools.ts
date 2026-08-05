@@ -260,6 +260,33 @@ export function marketDataTools(client: BinanceClient): ToolDefinition[] {
       inputSchema: z.object({ symbol: optSymbol }),
       handler: async ({ symbol }) => textResult(await d.symbolAdlRisk(symbol ? normalizeSymbol(symbol) : undefined)),
     },
+    {
+      name: 'futures_adl_quantile',
+      description: 'Get the position ADL (auto-deleveraging) quantile estimation for one symbol or all symbols (signed).',
+      inputSchema: z.object({ symbol: optSymbol }),
+      handler: async ({ symbol }) => textResult(await d.adlQuantile(symbol ? normalizeSymbol(symbol) : undefined)),
+    },
+    {
+      name: 'futures_force_orders',
+      description: "Get the user's force-liquidation orders (LIQUIDATION) and ADL orders for a symbol or all symbols (signed).",
+      inputSchema: z.object({
+        symbol: optSymbol,
+        autoCloseType: z.enum(['LIQUIDATION', 'ADL']).optional(),
+        startTime,
+        endTime,
+        limit: limitDefault.default(50),
+      }),
+      handler: async ({ symbol, autoCloseType, startTime, endTime, limit }) =>
+        textResult(
+          await d.forceOrders({
+            symbol: symbol ? normalizeSymbol(symbol) : undefined,
+            autoCloseType,
+            startTime,
+            endTime,
+            limit: Number(limit),
+          }),
+        ),
+    },
   ];
 
   return tools;
