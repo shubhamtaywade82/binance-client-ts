@@ -129,11 +129,7 @@ export class FuturesData {
 
   async symbolConfig(symbol?: string): Promise<unknown[]> {
     const params = symbol ? { symbol } : {};
-    return this.http.get('/symbolConfig', params);
-  }
-
-  async quantitativeRules(): Promise<unknown[]> {
-    return this.http.get('/quantitativeRules');
+    return this.http.get('/symbolConfig', params, 'signed');
   }
 
   async forceOrders(options?: {
@@ -143,17 +139,21 @@ export class FuturesData {
     endTime?: number;
     limit?: number;
   }): Promise<unknown[]> {
-    return this.http.get('/forceOrders', {
-      symbol: options?.symbol,
-      autoCloseType: options?.autoCloseType,
-      startTime: options?.startTime,
-      endTime: options?.endTime,
-      limit: options?.limit,
-    });
+    return this.http.get(
+      '/forceOrders',
+      {
+        symbol: options?.symbol,
+        autoCloseType: options?.autoCloseType,
+        startTime: options?.startTime,
+        endTime: options?.endTime,
+        limit: options?.limit,
+      },
+      'signed',
+    );
   }
 
   async insuranceFundBalance(options?: { symbol?: string; startTime?: number; endTime?: number; limit?: number }): Promise<unknown[]> {
-    return this.http.get('/insuranceFundBalance', {
+    return this.http.get('/insuranceBalance', {
       symbol: options?.symbol,
       startTime: options?.startTime,
       endTime: options?.endTime,
@@ -168,5 +168,14 @@ export class FuturesData {
   async delistSchedule(symbol?: string): Promise<unknown[]> {
     const params = symbol ? { symbol } : {};
     return this.http.get('/delistSchedule', params);
+  }
+
+  async symbolAdlRisk(symbol?: string): Promise<unknown[]> {
+    const params = symbol ? { symbol } : {};
+    return this.http.get('/symbolAdlRisk', params, 'signed');
+  }
+
+  async deliveryPrice(pair: string): Promise<{ deliveryTime: number; deliveryPrice: number }[]> {
+    return this.dataHttp.get('/delivery-price', { pair });
   }
 }

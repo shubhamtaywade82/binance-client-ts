@@ -178,4 +178,26 @@ export class FuturesTrading {
       await this.http.post('/fapi/v1/countdownCancelAll', { symbol, countdownTime }, 'signed'),
     );
   }
+
+  async convertExchangeInfo(options?: { fromAsset?: string; toAsset?: string }): Promise<unknown[]> {
+    return this.http.get('/fapi/v1/convert/exchangeInfo', options);
+  }
+
+  async convertGetQuote(params: {
+    fromAsset: string;
+    toAsset: string;
+    fromAmount?: number;
+    toAmount?: number;
+    validTime?: '10s' | '30s' | '1m' | '2m';
+  }): Promise<Record<string, unknown>> {
+    return this.http.post('/fapi/v1/convert/getQuote', params, 'signed');
+  }
+
+  async convertAcceptQuote(quoteId: string): Promise<Record<string, unknown>> {
+    return this.http.post('/fapi/v1/convert/acceptQuote', { quoteId }, 'signed');
+  }
+
+  async convertOrderStatus(options: { orderId?: string; quoteId?: string }): Promise<Record<string, unknown>> {
+    return this.http.get('/fapi/v1/convert/orderStatus', options, 'signed');
+  }
 }
