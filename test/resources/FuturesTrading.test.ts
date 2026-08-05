@@ -108,4 +108,32 @@ describe('FuturesTrading', () => {
     const res = await trading().setMarginType('BTCUSDT', 'isolated');
     expect(res.msg).toBe('ok');
   });
+
+  it('fetches convert exchange info (public)', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/convert/exchangeInfo', () =>
+        HttpResponse.json([{ fromAsset: 'BTC', toAsset: 'USDT' }]),
+      ),
+    );
+
+    const res = await trading().convertExchangeInfo({ fromAsset: 'BTC' });
+    expect((res[0] as { fromAsset: string }).fromAsset).toBe('BTC');
+  });
+
+  it('gets a convert quote and accepts it', async () => {
+    server.use(
+      http.post('https://fapi.binance.com/fapi/v1/convert/getQuote', () =>
+        HttpResponse.json({ quoteId: 'q1', ratio: '60000' }),
+      ),
+      http.post('https://fapi.binance.com/fapi/v1/convert/acceptQuote', () =>
+        HttpResponse.json({ orderId: 'o1', createTime: 1, orderStatus: 'PROCESS' }),
+      ),
+    );
+
+    const quote = await trading().convertGetQuote({ fromAsset: 'BTC', toAsset: 'USDT', fromAmount: 0.01 });
+    expect(quote.quoteId).toBe('q1');
+
+    const accepted = await trading().convertAcceptQuote('q1');
+    expect(accepted.orderId).toBe('o1');
+  });
 });

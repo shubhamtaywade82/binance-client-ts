@@ -91,4 +91,41 @@ describe('FuturesAccount', () => {
     const res = await account().requestOrderDownload({ symbol: 'BTCUSDT' });
     expect(res.downloadId).toBe('d1');
   });
+
+  it('fetches account config', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/accountConfig', () =>
+        HttpResponse.json({ feeTier: 0, canTrade: true, dualSidePosition: false }),
+      ),
+    );
+
+    const res = await account().accountConfig();
+    expect(res.canTrade).toBe(true);
+  });
+
+  it('fetches portfolio margin account info', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/pmAccountInfo', () =>
+        HttpResponse.json({ asset: 'USDT', crossMarginAsset: '100' }),
+      ),
+    );
+
+    const res = await account().pmAccountInfo('USDT');
+    expect(res.asset).toBe('USDT');
+  });
+
+  it('requests income download and checks status', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/income/asyn', () => HttpResponse.json({ downloadId: 'd2' })),
+      http.get('https://fapi.binance.com/fapi/v1/income/asyn/id', () =>
+        HttpResponse.json({ downloadId: 'd2', status: 'completed', url: 'https://example.com/d2' }),
+      ),
+    );
+
+    const req = await account().requestIncomeDownload({ startTime: 1, endTime: 2 });
+    expect(req.downloadId).toBe('d2');
+
+    const status = await account().getIncomeDownloadStatus('d2');
+    expect(status.status).toBe('completed');
+  });
 });

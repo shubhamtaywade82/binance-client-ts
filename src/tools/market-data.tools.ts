@@ -235,6 +235,58 @@ export function marketDataTools(client: BinanceClient): ToolDefinition[] {
       inputSchema: z.object({ symbol: z.string().min(1).describe('USD-M pair, e.g. BTCUSDT') }),
       handler: async ({ symbol }) => textResult(await d.indexPriceConstituents(normalizeSymbol(symbol))),
     },
+    {
+      name: 'futures_premium_index_klines',
+      description: 'Get premium index candlesticks for a symbol (mark price premium over index price).',
+      inputSchema: z.object({ symbol: z.string().min(1).describe('USD-M pair, e.g. BTCUSDT'), interval: KlineIntervalSchema, limit: limitDefault.default(500), startTime, endTime }),
+      handler: async ({ symbol, interval, limit, startTime, endTime }) =>
+        textResult(await m.premiumIndexKlines(normalizeSymbol(symbol), interval, { limit: Number(limit), startTime, endTime })),
+    },
+    {
+      name: 'futures_rpi_depth',
+      description: 'Get the RPI (Retail Price Improvement) order book depth for a symbol.',
+      inputSchema: z.object({ symbol: z.string().min(1).describe('USD-M pair, e.g. BTCUSDT'), limit: z.number().int().positive().default(1000) }),
+      handler: async ({ symbol, limit }) => textResult(await m.rpiDepth(normalizeSymbol(symbol), Number(limit))),
+    },
+    {
+      name: 'futures_delivery_price',
+      description: 'Get historical quarterly contract settlement/delivery prices for a pair.',
+      inputSchema: z.object({ symbol: z.string().min(1).describe('Base pair, e.g. BTCUSDT') }),
+      handler: async ({ symbol }) => textResult(await d.deliveryPrice(normalizeSymbol(symbol))),
+    },
+    {
+      name: 'futures_symbol_adl_risk',
+      description: 'Get the auto-deleveraging (ADL) risk level for one symbol or all symbols on the account (signed).',
+      inputSchema: z.object({ symbol: optSymbol }),
+      handler: async ({ symbol }) => textResult(await d.symbolAdlRisk(symbol ? normalizeSymbol(symbol) : undefined)),
+    },
+    {
+      name: 'futures_adl_quantile',
+      description: 'Get the position ADL (auto-deleveraging) quantile estimation for one symbol or all symbols (signed).',
+      inputSchema: z.object({ symbol: optSymbol }),
+      handler: async ({ symbol }) => textResult(await d.adlQuantile(symbol ? normalizeSymbol(symbol) : undefined)),
+    },
+    {
+      name: 'futures_force_orders',
+      description: "Get the user's force-liquidation orders (LIQUIDATION) and ADL orders for a symbol or all symbols (signed).",
+      inputSchema: z.object({
+        symbol: optSymbol,
+        autoCloseType: z.enum(['LIQUIDATION', 'ADL']).optional(),
+        startTime,
+        endTime,
+        limit: limitDefault.default(50),
+      }),
+      handler: async ({ symbol, autoCloseType, startTime, endTime, limit }) =>
+        textResult(
+          await d.forceOrders({
+            symbol: symbol ? normalizeSymbol(symbol) : undefined,
+            autoCloseType,
+            startTime,
+            endTime,
+            limit: Number(limit),
+          }),
+        ),
+    },
   ];
 
   return tools;

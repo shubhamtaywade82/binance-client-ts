@@ -30,6 +30,16 @@ describe('futures toolkit', () => {
     expect(tk.trading.length).toBeGreaterThan(15);
   });
 
+  it('exposes composite tools alongside the primitives', () => {
+    const tk = createFuturesToolkit(client());
+    const names = new Set(tk.derived.map((t) => t.name));
+    expect(names).toContain('futures_symbol_rules');
+    expect(names).toContain('futures_size_position');
+    expect(names).toContain('futures_close_position');
+    expect(names).toContain('futures_market_snapshot');
+    expect(tk.derived.every((t) => tk.tools.includes(t))).toBe(true);
+  });
+
   it('converts tools to OpenAI / Anthropic / MCP formats', () => {
     const tk = createFuturesToolkit(client());
     const f = toolkitToFormats(tk);

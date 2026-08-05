@@ -149,6 +149,22 @@ export class FuturesAccount {
     return RateLimitOrderResponseSchema.parse(await this.http.get('/fapi/v1/rateLimit/order', undefined, 'signed'));
   }
 
+  async accountConfig(): Promise<Record<string, unknown>> {
+    return this.http.get('/fapi/v1/accountConfig', undefined, 'signed');
+  }
+
+  async pmAccountInfo(asset: string): Promise<Record<string, unknown>> {
+    return this.http.get('/fapi/v1/pmAccountInfo', { asset }, 'signed');
+  }
+
+  async requestIncomeDownload(options: { startTime: number; endTime: number }): Promise<Record<string, unknown>> {
+    return this.http.get('/fapi/v1/income/asyn', options, 'signed');
+  }
+
+  async getIncomeDownloadStatus(downloadId: string): Promise<Record<string, unknown>> {
+    return this.http.get('/fapi/v1/income/asyn/id', { downloadId }, 'signed');
+  }
+
   async requestOrderDownload(options?: {
     symbol?: string;
     startTime?: number;

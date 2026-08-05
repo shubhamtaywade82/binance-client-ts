@@ -33,7 +33,7 @@ export const CreateOrderParamsSchema = z.object({
   type: z.string(),
   quantity: z.union([z.string(), z.number()]).optional(),
   price: z.union([z.string(), z.number()]).optional(),
-  timeInForce: z.enum(['GTC', 'IOC', 'FOK', 'GTX']).optional(),
+  timeInForce: z.enum(['GTC', 'IOC', 'FOK', 'GTX', 'GTD']).optional(),
   stopPrice: z.union([z.string(), z.number()]).optional(),
   reduceOnly: z.boolean().optional(),
   positionSide: z.enum(['BOTH', 'LONG', 'SHORT']).optional(),
@@ -43,6 +43,9 @@ export const CreateOrderParamsSchema = z.object({
   priceProtect: z.boolean().optional(),
   workingType: z.enum(['MARK_PRICE', 'CONTRACT_PRICE']).optional(),
   callbackRate: z.union([z.string(), z.number()]).optional(),
+  activationPrice: z.union([z.string(), z.number()]).optional(),
+  selfTradePreventionMode: z.enum(['NONE', 'EXPIRE_TAKER', 'EXPIRE_MAKER', 'EXPIRE_BOTH']).optional(),
+  goodTillDate: z.number().optional(),
 });
 export type CreateOrderParams = z.infer<typeof CreateOrderParamsSchema>;
 

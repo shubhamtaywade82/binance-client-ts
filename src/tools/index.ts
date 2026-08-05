@@ -1,5 +1,6 @@
 import type { BinanceClient } from '../client/BinanceClient.js';
 import { accountTools } from './account.tools.js';
+import { derivedTools } from './derived.tools.js';
 import { marketDataTools } from './market-data.tools.js';
 import { createPaperContext, type PaperContext, paperTools } from './paper.tools.js';
 import { tradingTools } from './trading.tools.js';
@@ -12,6 +13,7 @@ export { toJsonSchema, toOpenAITool, toAnthropicTool, toMCPTool, toToolList, tex
 export { marketDataTools } from './market-data.tools.js';
 export { accountTools } from './account.tools.js';
 export { tradingTools } from './trading.tools.js';
+export { derivedTools } from './derived.tools.js';
 export { wsTools, getBufferedWsEvents, clearBufferedWsEvents } from './ws.tools.js';
 export { createPaperContext, paperTools, type PaperState, type PaperPosition, type PaperEvent, type PaperContext } from './paper.tools.js';
 
@@ -22,6 +24,8 @@ export interface FuturesToolkit {
   account: ToolDefinition[];
   trading: ToolDefinition[];
   ws: ToolDefinition[];
+  /** Composite tools that fan out over several endpoints. */
+  derived: ToolDefinition[];
   paper: ToolDefinition[];
   paperContext: PaperContext;
 }
@@ -31,15 +35,17 @@ export function createFuturesToolkit(client: BinanceClient): FuturesToolkit {
   const account = accountTools(client);
   const trading = tradingTools(client);
   const ws = wsTools(client);
+  const derived = derivedTools(client);
   const paperContext = createPaperContext(client);
   const paper = paperTools(paperContext);
   return {
     client,
-    tools: [...market, ...account, ...trading, ...ws, ...paper],
+    tools: [...market, ...account, ...trading, ...ws, ...derived, ...paper],
     market,
     account,
     trading,
     ws,
+    derived,
     paper,
     paperContext,
   };

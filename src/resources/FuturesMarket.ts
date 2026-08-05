@@ -8,6 +8,8 @@ import {
   TickerPriceSchema,
   BookTicker,
   BookTickerSchema,
+  DepthSnapshot,
+  DepthSnapshotSchema,
   ExchangeInfo,
   ExchangeInfoSchema,
 } from '../types/market.types.js';
@@ -65,6 +67,25 @@ export class FuturesMarket extends MarketDataBase {
       limit: options?.limit ?? 500,
     });
     return KlinesResponseSchema.parse(data);
+  }
+
+  async premiumIndexKlines(
+    symbol: string,
+    interval: KlineInterval,
+    options?: { startTime?: number; endTime?: number; limit?: number },
+  ): Promise<Kline[]> {
+    const data = await this.http.get('/premiumIndexKlines', {
+      symbol,
+      interval,
+      startTime: options?.startTime,
+      endTime: options?.endTime,
+      limit: options?.limit ?? 500,
+    });
+    return KlinesResponseSchema.parse(data);
+  }
+
+  async rpiDepth(symbol: string, limit = 1000): Promise<DepthSnapshot> {
+    return DepthSnapshotSchema.parse(await this.http.get('/rpiDepth', { symbol, limit }));
   }
 
   async tradingDayTicker(symbol?: string): Promise<unknown[]> {
