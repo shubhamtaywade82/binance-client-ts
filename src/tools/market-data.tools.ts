@@ -67,10 +67,10 @@ export function marketDataTools(client: BinanceClient): ToolDefinition[] {
     },
     {
       name: 'futures_order_book',
-      description: 'Get order book depth for a symbol. Limits: 5, 10, 20, 50, 100, 500, 1000, 5000.',
+      description: 'Get order book depth for a symbol. Limits: 5, 10, 20, 50, 100, 500, 1000.',
       inputSchema: z.object({
         symbol: z.string().min(1).describe('USD-M pair, e.g. BTCUSDT'),
-        limit: z.enum(['5', '10', '20', '50', '100', '500', '1000', '5000']).default('100'),
+        limit: z.enum(['5', '10', '20', '50', '100', '500', '1000']).default('100'),
       }),
       handler: async ({ symbol, limit }) => textResult(await m.depth(normalizeSymbol(symbol), Number(limit))),
     },
