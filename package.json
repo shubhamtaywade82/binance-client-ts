@@ -33,8 +33,12 @@
     "binance-usdm-mcp": "./dist/mcp/index.js"
   },
   "sideEffects": false,
-  "files": ["dist"],
-  "engines": { "node": ">=18" },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [
     "binance",
     "futures",
