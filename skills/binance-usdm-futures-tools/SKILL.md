@@ -3,7 +3,7 @@ name: binance-usdm-futures-tools
 description: "LLM tool-calling + MCP + agent skill for Binance USD-M Futures. Use the binance-client-ts SDK tool layer. Public market data (no auth) first, then private signed endpoints on explicit user confirmation."
 metadata:
   version: 1.0.0
-  package: binance-client-ts
+  package: '@shubhamtaywade82/binance-client-ts'
   mcp: binance-usdm-mcp
 ---
 
@@ -188,7 +188,7 @@ context directly without the model calling anything first:
   `command: npx`, `args: ["binance-usdm-mcp"]`. (Stdio transport; no URL needed.)
 - **Direct SDK:**
   ```ts
-  import { BinanceClient, createFuturesToolkit, toolkitToFormats } from 'binance-client-ts';
+  import { BinanceClient, createFuturesToolkit, toolkitToFormats } from '@shubhamtaywade82/binance-client-ts';
   const client = new BinanceClient({ apiKey, apiSecret, testnet });
   const tk = createFuturesToolkit(client);
   const openaiTools = toolkitToFormats(tk).openai;      // for function-calling agents

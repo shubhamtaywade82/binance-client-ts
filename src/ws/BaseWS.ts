@@ -82,6 +82,7 @@ export class BaseWS extends EventEmitter {
     });
 
     this.ws.on('error', (err: Error) => {
+      if (this.closedByUser) return;
       this.emit('error', err);
     });
   }
