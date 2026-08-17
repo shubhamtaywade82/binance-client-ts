@@ -68,12 +68,12 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^20.17.14",
+    "@types/node": "^26.2.0",
     "@types/ws": "^8.5.13",
     "msw": "^2.7.0",
     "tsup": "^8.3.5",
-    "tsx": "^4.23.1",
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.9"
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   }
 }
