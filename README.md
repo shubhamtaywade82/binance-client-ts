@@ -8,16 +8,14 @@ role for DhanHQ). Feature-parity with `binance-client-js` (REST + WS), with type
 
 ## Install
 
-Not yet published. Reference via a local path or git URL, e.g.:
-
-```json
-{ "dependencies": { "binance-client-ts": "file:../binance-client-ts" } }
+```bash
+npm install @shubhamtaywade82/binance-client-ts
 ```
 
 ## Usage
 
 ```typescript
-import { BinanceClient } from 'binance-client-ts';
+import { BinanceClient } from '@shubhamtaywade82/binance-client-ts';
 
 const client = new BinanceClient({
   apiKey: 'YOUR_API_KEY',      // only needed for authenticated endpoints
@@ -146,7 +144,7 @@ Simulates fills against live public prices — nothing is sent to the exchange. 
 at the requested leverage and released pro-rata as a position is reduced.
 
 ```typescript
-import { PaperTradingEngine } from 'binance-client-ts';
+import { PaperTradingEngine } from '@shubhamtaywade82/binance-client-ts';
 
 const engine = new PaperTradingEngine({ initialBalance: 10_000 });
 await engine.placeOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.05, leverage: 5 });
@@ -161,7 +159,7 @@ The SDK ships a framework-agnostic tool layer plus an MCP server, so any functio
 (OpenAI, Anthropic/Claude, MCP hosts) can drive the client.
 
 ```ts
-import { BinanceClient, createFuturesToolkit, toolkitToFormats } from 'binance-client-ts';
+import { BinanceClient, createFuturesToolkit, toolkitToFormats } from '@shubhamtaywade82/binance-client-ts';
 const tk = createFuturesToolkit(new BinanceClient({ apiKey, apiSecret, testnet }));
 const { openai, anthropic, mcp } = toolkitToFormats(tk); // tool schemas per format
 ```

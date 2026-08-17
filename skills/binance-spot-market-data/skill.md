@@ -3,7 +3,7 @@ name: binance-spot-market-data
 description: "Binance Spot market data + WebSocket streams via binance-client-ts. Klines (klines/uiKlines), order book, trades, tickers (24h, book, rolling-window, trading-day), avgPrice, plus diff-depth / avgPrice / rolling-window WS streams."
 metadata:
   version: 1.0.0
-  package: binance-client-ts
+  package: '@shubhamtaywade82/binance-client-ts'
   mcp: binance-usdm-mcp
 ---
 

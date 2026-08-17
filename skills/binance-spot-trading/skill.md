@@ -3,7 +3,7 @@ name: binance-spot-trading
 description: "LLM tool-calling + MCP for Binance Spot trading. Use the binance-client-ts Spot layer (client.spot.account / client.spot.trading) for balances, orders, cancel-replace and OCO order lists. Public market data first; signed order/account actions only on explicit CONFIRM."
 metadata:
   version: 1.0.0
-  package: binance-client-ts
+  package: '@shubhamtaywade82/binance-client-ts'
   mcp: binance-usdm-mcp
 ---
 
@@ -78,7 +78,7 @@ Events (via `client.spot.wsUser`): `executionReport`, `outboundAccountPosition`,
 
 ## LLM Wiring (one-time)
 ```ts
-import { BinanceClient, createFuturesToolkit } from 'binance-client-ts';
+import { BinanceClient, createFuturesToolkit } from '@shubhamtaywade82/binance-client-ts';
 const client = new BinanceClient({ apiKey, apiSecret, testnet });
 const tk = createFuturesToolkit(client);
 await tk.spot.find(t => t.name === 'spot_new_order')!.handler(

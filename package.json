@@ -1,5 +1,5 @@
 {
-  "name": "binance-client-ts",
+  "name": "@shubhamtaywade82/binance-client-ts",
   "version": "2.1.0",
   "description": "TypeScript client for Binance APIs (Spot + USD-M Futures) — market data, account, trading, algo orders, user data streams, signed WS API, LLM tool layer + MCP server",
   "license": "MIT",
@@ -7,6 +7,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shubhamtaywade82/binance-client-ts.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "type": "module",
   "main": "./dist/index.cjs",
@@ -30,7 +33,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "binance-usdm-mcp": "./dist/mcp/index.js"
+    "binance-usdm-mcp": "dist/mcp/index.js"
   },
   "sideEffects": false,
   "files": ["dist"],
