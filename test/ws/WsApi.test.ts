@@ -52,4 +52,37 @@ describe('WsApi', () => {
     const api = new WsApi({ baseUrl: `ws://localhost:${port}` });
     await expect(api.request('order.place', {})).rejects.toThrow('API key and secret required');
   });
+
+  it('sends unsigned public market-data requests without credentials', async () => {
+    let received: { id: string; method: string; params: Record<string, unknown> } | undefined;
+    server.on('connection', (socket) => {
+      socket.on('message', (raw) => {
+        received = JSON.parse(raw.toString()) as { id: string; method: string; params: Record<string, unknown> };
+        socket.send(JSON.stringify({ id: received.id, status: 200, result: { symbol: 'BTCUSDT', price: '60000' } }));
+      });
+    });
+
+    const api = new WsApi({ baseUrl: `ws://localhost:${port}` });
+    const res = await api.tickerPrice({ symbol: 'BTCUSDT' });
+
+    expect(received?.method).toBe('ticker.price');
+    expect(received?.params.symbol).toBe('BTCUSDT');
+    expect(received?.params.apiKey).toBeUndefined();
+    expect(received?.params.signature).toBeUndefined();
+    expect(res.result).toEqual({ symbol: 'BTCUSDT', price: '60000' });
+  });
+
+  it('wraps userDataStream.start for WS-managed listen keys', async () => {
+    let received: { method: string } | undefined;
+    server.on('connection', (socket) => {
+      socket.on('message', (raw) => {
+        received = JSON.parse(raw.toString()) as { method: string };
+        socket.send(JSON.stringify({ id: 'x', status: 200, result: { listenKey: 'abc' } }));
+      });
+    });
+
+    const api = new WsApi({ baseUrl: `ws://localhost:${port}`, apiKey: 'k', apiSecret: 's' });
+    await api.userDataStreamStart();
+    expect(received?.method).toBe('userDataStream.start');
+  });
 });

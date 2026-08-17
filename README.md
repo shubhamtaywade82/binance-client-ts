@@ -100,11 +100,14 @@ client.closeUserStream();
   filters), `quantize`, `sizePosition` (risk-based sizing), `closePosition`, `marketSnapshot`,
   `accountOverview`, `placeBracketOrder`
 - `userStream` — listenKey lifecycle (create / keep-alive / close)
-- `ws` — market WebSocket streams (kline, continuous/index/mark klines, aggTrade, trade, depth,
-  ticker, rolling-window ticker, mark price, book ticker, mini ticker, liquidations, composite
-  index, asset index + all-market/arr variants)
+- `ws` — market WebSocket streams (kline, continuous/index/mark klines, aggTrade, trade, depth
+  incl. full order-book diff-depth, ticker, rolling-window ticker + all-market variant, mark price,
+  book ticker, mini ticker, liquidations, composite index, asset index + all-market/arr variants)
 - `wsUser` — user data stream (ACCOUNT_UPDATE, ORDER_TRADE_UPDATE, MARGIN_CALL; auto-reconnect)
-- `wsApi` — signed WebSocket API (order.place/cancel/modify, algoOrder.place/cancel)
+- `wsApi` — WebSocket API: signed trading (order.place/cancel/modify/status, algoOrder.place/cancel,
+  orderList.place/cancel/status, account.status/position, userDataStream.start/ping/stop) and public
+  market data (time, exchangeInfo, klines, aggTrades, trades, depth, avgPrice,
+  ticker.price/bookTicker/24hr)
 
 ### Client options
 `apiKey`, `apiSecret`, `testnet`, `demo`, `recvWindow`, `apiBase`, `wsBase`, `wsUserBase`,

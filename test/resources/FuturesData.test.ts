@@ -126,9 +126,9 @@ describe('FuturesData', () => {
     expect((config[0] as { symbol: string }).symbol).toBe('BTCUSDT');
   });
 
-  it('fetches insurance fund balance from the correct path', async () => {
+  it('fetches insurance fund balance from the /futures/data base', async () => {
     server.use(
-      http.get('https://fapi.binance.com/fapi/v1/insuranceBalance', () =>
+      http.get('https://fapi.binance.com/futures/data/insuranceBalance', () =>
         HttpResponse.json([{ symbols: ['BTCUSDT'], assets: [] }]),
       ),
     );
@@ -136,6 +136,25 @@ describe('FuturesData', () => {
     const data = new FuturesData();
     const balance = await data.insuranceFundBalance({ symbol: 'BTCUSDT' });
     expect(Array.isArray(balance)).toBe(true);
+  });
+
+  it('fetches BLVT NAV klines with required tokenName + interval', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/lvtKlines', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json([
+          { open: '1', high: '2', low: '0.5', close: '1.5', volume: '100', time: 1 },
+        ]);
+      }),
+    );
+
+    const data = new FuturesData();
+    const klines = await data.blvtInfo('BTCDOWN', '1h', { limit: 1 });
+    const url = new URL(capturedUrl);
+    expect(url.searchParams.get('tokenName')).toBe('BTCDOWN');
+    expect(url.searchParams.get('interval')).toBe('1h');
+    expect(Array.isArray(klines)).toBe(true);
   });
 
   it('fetches delivery price', async () => {

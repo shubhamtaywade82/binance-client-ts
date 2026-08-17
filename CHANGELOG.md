@@ -3,6 +3,21 @@
 All notable changes to `binance-client-ts` are documented here.
 Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+### Fixed
+- `FuturesData.insuranceFundBalance` now hits the correct `/futures/data/insuranceBalance` endpoint
+  (was incorrectly calling `/fapi/v1/insuranceBalance`).
+- `FuturesData.blvtInfo` now sends the required `interval` (plus optional `startTime`/`endTime`/`limit`)
+  for BLVT NAV klines (`/fapi/v1/lvtKlines`).
+
+### Added
+- Full order-book diff-depth market streams: `FuturesMarketWS.depthDiff` (`<symbol>@depth`) and
+  `depthDiffSpeed` (`<symbol>@depth@100ms` / `@depth@500ms`); depth payloads now preserve `pu`/`T`.
+- All-market rolling-window ticker stream: `FuturesMarketWS.allRollingWindowTickers` (`!ticker_<w>@arr`).
+- `WsApi` unsigned/public market-data methods (`time`, `exchangeInfo`, `klines`, `aggTrades`, `trades`,
+  `depth`, `avgPrice`, `ticker.price/bookTicker/24hr`) and signed `order.status`, `orderList.*`,
+  `account.status/position`, and `userDataStream.start/ping/stop`.
+
 ## [2.2.0] - 2026-08-04
 ### Added
 - **LLM tool layer** (`src/tools/`): 80 framework-agnostic tools (31 market / 22 account / 22 trading / 7 ws / 7 paper),

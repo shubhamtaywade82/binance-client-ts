@@ -55,6 +55,8 @@ export const WsDepthUpdatePayloadSchema = z.object({
   s: z.string(),
   U: z.number(),
   u: z.number(),
+  T: z.number().optional(),
+  pu: z.number().optional(),
   b: z.array(z.tuple([z.string(), z.string()])),
   a: z.array(z.tuple([z.string(), z.string()])),
 });
