@@ -158,7 +158,7 @@ export const WsAssetIndexPayloadSchema = z.object({
 export type WsAssetIndexPayload = z.infer<typeof WsAssetIndexPayloadSchema>;
 
 export const WsRollingWindowTickerPayloadSchema = z.object({
-  e: z.literal('1hTicker'),
+  e: z.enum(['1hTicker', '4hTicker', '1dTicker', '7dTicker', '30dTicker']),
   E: z.number(),
   s: z.string(),
   p: z.string().transform(Number),
@@ -174,6 +174,16 @@ export const WsRollingWindowTickerPayloadSchema = z.object({
 });
 export type WsRollingWindowTickerPayload = z.infer<typeof WsRollingWindowTickerPayloadSchema>;
 
+export const WsSpotAvgPricePayloadSchema = z.object({
+  e: z.literal('avgPrice'),
+  E: z.number(),
+  s: z.string(),
+  i: z.string(),
+  w: z.string().transform(Number),
+  T: z.number(),
+});
+export type WsSpotAvgPricePayload = z.infer<typeof WsSpotAvgPricePayloadSchema>;
+
 export type WsStreamPayload =
   | WsKlinePayload
   | WsAggTradePayload
@@ -186,7 +196,8 @@ export type WsStreamPayload =
   | WsForceOrderPayload
   | WsCompositeIndexPayload
   | WsAssetIndexPayload
-  | WsRollingWindowTickerPayload;
+  | WsRollingWindowTickerPayload
+  | WsSpotAvgPricePayload;
 
 export function parseWsPayload(streamName: string, raw: unknown): WsStreamPayload {
   if (streamName.includes('@kline_')) return WsKlinePayloadSchema.parse(raw);
@@ -202,6 +213,7 @@ export function parseWsPayload(streamName: string, raw: unknown): WsStreamPayloa
   if (streamName.includes('@forceOrder')) return WsForceOrderPayloadSchema.parse(raw);
   if (streamName.includes('@compositeIndex')) return WsCompositeIndexPayloadSchema.parse(raw);
   if (streamName.includes('@assetIndex')) return WsAssetIndexPayloadSchema.parse(raw);
+  if (streamName.includes('@avgPrice')) return WsSpotAvgPricePayloadSchema.parse(raw);
   if (streamName.includes('@ticker_')) return WsRollingWindowTickerPayloadSchema.parse(raw);
   if (streamName.includes('@ticker')) return WsTicker24hrPayloadSchema.parse(raw);
   throw new Error(`Unknown WS stream type: ${streamName}`);

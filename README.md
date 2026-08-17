@@ -64,6 +64,18 @@ const order = await client.futures.trading.createOrder({
 });
 await client.futures.trading.cancelOrder('BTCUSDT', { orderId: order.orderId });
 
+// Spot account + trading
+const spotAccount = await client.spot.account.account();
+const spotOrder = await client.spot.trading.createOrder({
+  symbol: 'BTCUSDT',
+  side: 'BUY',
+  type: 'LIMIT',
+  quantity: '0.001',
+  price: '60000',
+  timeInForce: 'GTC',
+});
+await client.spot.trading.cancelOrder('BTCUSDT', { orderId: spotOrder.orderId });
+
 // Market WebSocket (combined stream, auto-reconnect)
 client.futures.ws.subscribe([
   client.futures.ws.kline('SOLUSDT', '15m'),
@@ -76,13 +88,24 @@ const listenKey = await client.startUserStream();
 client.futures.wsUser.on('ORDER_TRADE_UPDATE', (event) => console.log(event.o));
 client.futures.wsUser.on('ACCOUNT_UPDATE', (event) => console.log(event.a));
 client.closeUserStream();
+
+// Spot user data stream
+await client.startSpotUserStream();
+client.spot.wsUser.on('executionReport', (event) => console.log(event.s));
+client.closeSpotUserStream();
 ```
 
 ## API Surface
 
 ### Spot (`client.spot`)
-- `market` — public REST (klines, tickers, depth, trades, aggTrades, exchangeInfo, avgPrice)
-- `ws` — market WebSocket streams
+- `market` — public REST (klines + uiKlines, tickers incl. rolling-window & trading-day, depth,
+  trades, aggTrades, exchangeInfo, avgPrice)
+- `account` — authenticated account (account info, myTrades, myPreventedMatches, commission, rate limits)
+- `trading` — order lifecycle (create/test/get/cancel, open/all orders, cancelReplace, OCO order lists)
+- `userStream` — listenKey lifecycle (create / keep-alive / close)
+- `ws` — market WebSocket streams (kline, trade, aggTrade, depth incl. diff-depth, ticker incl.
+  rolling-window, bookTicker, miniTicker, avgPrice + all-market/arr variants)
+- `wsUser` — spot user data stream (executionReport, outboundAccountPosition, balanceUpdate, listStatus)
 
 ### Futures (`client.futures`)
 - `market` — public REST market data (klines incl. continuous/index/mark/premium-index variants,

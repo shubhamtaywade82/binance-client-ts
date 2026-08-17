@@ -17,6 +17,11 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 - `WsApi` unsigned/public market-data methods (`time`, `exchangeInfo`, `klines`, `aggTrades`, `trades`,
   `depth`, `avgPrice`, `ticker.price/bookTicker/24hr`) and signed `order.status`, `orderList.*`,
   `account.status/position`, and `userDataStream.start/ping/stop`.
+- Full **Spot** support: `client.spot.account` (account info, myTrades, myPreventedMatches,
+  commission, rate limits), `client.spot.trading` (orders + OCO order lists + cancelReplace),
+  `client.spot.userStream` (spot listenKey), and `client.spot.wsUser` (spot user-data stream).
+  Plus spot market REST (`uiKlines`, rolling-window & trading-day tickers) and spot market WS
+  (diff-depth, `avgPrice`, rolling-window ticker + all-market variants).
 
 ## [2.2.0] - 2026-08-04
 ### Added

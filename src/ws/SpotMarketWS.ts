@@ -22,8 +22,31 @@ export class SpotMarketWS extends BaseWS {
     return `${symbol.toLowerCase()}@depth${level}`;
   }
 
+  depthDiff(symbol: string): string {
+    return `${symbol.toLowerCase()}@depth`;
+  }
+
+  depthDiffSpeed(symbol: string, updateSpeed: '100ms'): string {
+    return `${symbol.toLowerCase()}@depth@${updateSpeed}`;
+  }
+
+  avgPrice(symbol: string): string {
+    return `${symbol.toLowerCase()}@avgPrice`;
+  }
+
   ticker(symbol: string): string {
     return `${symbol.toLowerCase()}@ticker`;
+  }
+
+  rollingWindowTicker(
+    symbol: string,
+    window: '1h' | '4h' | '1d' | '7d' | '30d' = '1h',
+  ): string {
+    return `${symbol.toLowerCase()}@ticker_${window}`;
+  }
+
+  allRollingWindowTickers(window: '1h' | '4h' | '1d' | '7d' | '30d' = '1h'): string {
+    return `!ticker_${window}@arr`;
   }
 
   miniTicker(symbol: string): string {
