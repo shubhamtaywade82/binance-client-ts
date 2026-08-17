@@ -9,9 +9,14 @@ describe('FuturesMarketWS', () => {
     expect(ws.trade('SOLUSDT')).toBe('solusdt@trade');
     expect(ws.depth('SOLUSDT')).toBe('solusdt@depth20');
     expect(ws.depth('SOLUSDT', 5)).toBe('solusdt@depth5');
+    expect(ws.depthDiff('SOLUSDT')).toBe('solusdt@depth');
+    expect(ws.depthDiffSpeed('SOLUSDT', '500ms')).toBe('solusdt@depth@500ms');
+    expect(ws.depthDiffSpeed('SOLUSDT', '100ms')).toBe('solusdt@depth@100ms');
     expect(ws.ticker('SOLUSDT')).toBe('solusdt@ticker');
     expect(ws.continuousKline('SOLUSDT', 'perpetual', '5m')).toBe('solusdt@continuousKline_perpetual_5m');
     expect(ws.rollingWindowTicker('SOLUSDT', '4h')).toBe('solusdt@ticker_4h');
+    expect(ws.allRollingWindowTickers('1h')).toBe('!ticker_1h@arr');
+    expect(ws.allRollingWindowTickers('1d')).toBe('!ticker_1d@arr');
     expect(ws.allMarketTickers()).toBe('!ticker@arr');
     expect(ws.allBookTickers()).toBe('!bookTicker');
     expect(ws.markPrice('SOLUSDT')).toBe('solusdt@markPrice@3s');

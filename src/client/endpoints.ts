@@ -4,9 +4,12 @@ export interface Endpoints {
   restRoot: string;
   restFapi: string;
   restFuturesData: string;
+  restSpot: string;
   wsMarket: string;
   wsUser: string;
   wsApi: string;
+  wsSpotMarket: string;
+  wsSpotUser: string;
 }
 
 export function resolveEnvironment(options?: {
@@ -49,15 +52,30 @@ export function resolveEnvironment(options?: {
       ? 'wss://demo-fapi.binance.com/ws-fapi/v1'
       : 'wss://ws-fapi.binance.com/ws-fapi/v1');
 
+  const restSpotHost =
+    options?.apiBase ??
+    (env === 'testnet' ? 'https://testnet.binance.vision' : 'https://api.binance.com');
+
+  const wsSpotMarketHost =
+    options?.wsBase ??
+    (env === 'testnet' ? 'wss://testnet.binance.vision/stream' : 'wss://stream.binance.com:9443/stream');
+
+  const wsSpotUserHost =
+    options?.wsUserBase ??
+    (env === 'testnet' ? 'wss://testnet.binance.vision/ws' : 'wss://stream.binance.com:9443/ws');
+
   return {
     env,
     endpoints: {
       restRoot: restHost,
       restFapi: `${restHost}/fapi/v1`,
       restFuturesData: `${restHost}/futures/data`,
+      restSpot: `${restSpotHost}/api/v3`,
       wsMarket: wsMarketHost,
       wsUser: wsUserHost,
       wsApi: wsApiHost,
+      wsSpotMarket: wsSpotMarketHost,
+      wsSpotUser: wsSpotUserHost,
     },
   };
 }

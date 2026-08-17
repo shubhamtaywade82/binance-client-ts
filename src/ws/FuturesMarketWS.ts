@@ -37,12 +37,24 @@ export class FuturesMarketWS extends BaseWS {
     return `${symbol.toLowerCase()}@depth${level}`;
   }
 
+  depthDiff(symbol: string): string {
+    return `${symbol.toLowerCase()}@depth`;
+  }
+
+  depthDiffSpeed(symbol: string, updateSpeed: '100ms' | '500ms'): string {
+    return `${symbol.toLowerCase()}@depth@${updateSpeed}`;
+  }
+
   ticker(symbol: string): string {
     return `${symbol.toLowerCase()}@ticker`;
   }
 
   rollingWindowTicker(symbol: string, window: '1h' | '4h' | '1d' = '1h'): string {
     return `${symbol.toLowerCase()}@ticker_${window}`;
+  }
+
+  allRollingWindowTickers(window: '1h' | '4h' | '1d' = '1h'): string {
+    return `!ticker_${window}@arr`;
   }
 
   allMarketTickers(): string {

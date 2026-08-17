@@ -13,6 +13,7 @@ import {
   TakerLongShortRatioEntry,
   TakerLongShortRatioSchema,
 } from '../types/futures.types.js';
+import type { KlineInterval } from '../types/market.types.js';
 
 export interface FuturesDataEndpoints {
   restFapi?: string;
@@ -118,9 +119,18 @@ export class FuturesData {
     return this.http.get('/adlQuantile', params, 'signed');
   }
 
-  async blvtInfo(tokenName?: string): Promise<unknown[]> {
-    const params = tokenName ? { tokenName } : {};
-    return this.http.get('/lvtKlines', params);
+  async blvtInfo(
+    tokenName: string,
+    interval: KlineInterval,
+    options?: { startTime?: number; endTime?: number; limit?: number },
+  ): Promise<unknown[]> {
+    return this.http.get('/lvtKlines', {
+      tokenName,
+      interval,
+      startTime: options?.startTime,
+      endTime: options?.endTime,
+      limit: options?.limit,
+    });
   }
 
   async indexPriceConstituents(symbol: string): Promise<unknown> {
@@ -153,7 +163,7 @@ export class FuturesData {
   }
 
   async insuranceFundBalance(options?: { symbol?: string; startTime?: number; endTime?: number; limit?: number }): Promise<unknown[]> {
-    return this.http.get('/insuranceBalance', {
+    return this.dataHttp.get('/insuranceBalance', {
       symbol: options?.symbol,
       startTime: options?.startTime,
       endTime: options?.endTime,

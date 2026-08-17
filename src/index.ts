@@ -9,6 +9,8 @@ export type { Environment, Endpoints } from './client/endpoints.js';
 
 export { MarketDataBase } from './resources/MarketDataBase.js';
 export { SpotMarket } from './resources/SpotMarket.js';
+export { SpotAccount, SpotTrading } from './resources/SpotTrading.js';
+export { SpotUserDataStream } from './resources/SpotUserDataStream.js';
 export { FuturesMarket } from './resources/FuturesMarket.js';
 export { FuturesData } from './resources/FuturesData.js';
 export type { FuturesDataEndpoints } from './resources/FuturesData.js';
@@ -35,6 +37,8 @@ export type {
 export { BaseWS } from './ws/BaseWS.js';
 export type { BaseWSOptions } from './ws/BaseWS.js';
 export { SpotMarketWS } from './ws/SpotMarketWS.js';
+export { SpotUserWS } from './ws/SpotUserWS.js';
+export type { SpotUserWSOptions } from './ws/SpotUserWS.js';
 export { FuturesMarketWS } from './ws/FuturesMarketWS.js';
 export type { ContractType, MarkPriceSpeed } from './ws/FuturesMarketWS.js';
 export { FuturesUserWS } from './ws/FuturesUserWS.js';
@@ -45,6 +49,7 @@ export type { WsApiOptions } from './ws/WsApi.js';
 export * from './types/market.types.js';
 export * from './types/filters.types.js';
 export * from './types/futures.types.js';
+export * from './types/spot.types.js';
 export * from './types/ws.types.js';
 export * from './types/account.types.js';
 export * from './types/trading.types.js';
@@ -73,6 +78,7 @@ export {
   marketDataTools,
   accountTools,
   tradingTools,
+  spotTools,
   derivedTools,
   wsTools,
   getBufferedWsEvents,

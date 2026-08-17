@@ -3,12 +3,15 @@ import { resolveEnvironment } from './endpoints.js';
 import { FuturesData } from '../resources/FuturesData.js';
 import { FuturesMarket } from '../resources/FuturesMarket.js';
 import { SpotMarket } from '../resources/SpotMarket.js';
+import { SpotAccount, SpotTrading } from '../resources/SpotTrading.js';
+import { SpotUserDataStream } from '../resources/SpotUserDataStream.js';
 import { FuturesAccount } from '../resources/FuturesAccount.js';
 import { FuturesTrading } from '../resources/FuturesTrading.js';
 import { FuturesOps } from '../resources/FuturesOps.js';
 import { UserDataStream } from '../resources/UserDataStream.js';
 import { FuturesMarketWS } from '../ws/FuturesMarketWS.js';
 import { SpotMarketWS } from '../ws/SpotMarketWS.js';
+import { SpotUserWS } from '../ws/SpotUserWS.js';
 import { FuturesUserWS } from '../ws/FuturesUserWS.js';
 import { WsApi } from '../ws/WsApi.js';
 
@@ -31,7 +34,14 @@ export interface BinanceClientOptions {
 }
 
 export class BinanceClient {
-  readonly spot: { market: SpotMarket; ws: SpotMarketWS };
+  readonly spot: {
+    market: SpotMarket;
+    account: SpotAccount;
+    trading: SpotTrading;
+    userStream: SpotUserDataStream;
+    ws: SpotMarketWS;
+    wsUser: SpotUserWS;
+  };
   readonly futures: {
     market: FuturesMarket;
     data: FuturesData;
@@ -47,6 +57,8 @@ export class BinanceClient {
   private readonly authHttp: HttpClient;
   private listenKeyValue: string | null = null;
   private keepAliveInterval: NodeJS.Timeout | null = null;
+  private spotListenKeyValue: string | null = null;
+  private spotKeepAliveInterval: NodeJS.Timeout | null = null;
 
   static nowSeconds(): number {
     return Math.floor(Date.now() / 1000);
@@ -83,9 +95,17 @@ export class BinanceClient {
 
     this.authHttp = new HttpClient({ baseURL: endpoints.restRoot, ...httpOptions });
 
+    const spotHttp = new HttpClient({ baseURL: endpoints.restSpot, ...httpOptions });
     this.spot = {
-      market: new SpotMarket(),
-      ws: new SpotMarketWS(),
+      market: new SpotMarket(spotHttp),
+      account: new SpotAccount(spotHttp),
+      trading: new SpotTrading(spotHttp),
+      userStream: new SpotUserDataStream(spotHttp),
+      ws: new SpotMarketWS(endpoints.wsSpotMarket),
+      wsUser: new SpotUserWS({
+        baseUserUrl: endpoints.wsSpotUser,
+        getListenKey: () => this.spotListenKeyValue,
+      }),
     };
 
     const futuresMarket = new FuturesMarket(
@@ -143,22 +163,48 @@ export class BinanceClient {
     this.listenKeyValue = null;
   }
 
+  async startSpotUserStream(): Promise<string> {
+    const { listenKey } = await this.spot.userStream.createListenKey();
+    this.spotListenKeyValue = listenKey;
+    this.spotKeepAliveInterval = setInterval(() => {
+      this.spot.userStream.keepAliveListenKey().catch(() => {
+        /* spot listenKey keep-alive failures are retried on the next tick */
+      });
+    }, 30 * 60 * 1000);
+    this.spot.wsUser.connect();
+    return listenKey;
+  }
+
+  closeSpotUserStream(): void {
+    if (this.spotKeepAliveInterval) clearInterval(this.spotKeepAliveInterval);
+    this.spotKeepAliveInterval = null;
+    this.spot.wsUser.close();
+    this.spot.userStream.closeListenKey().catch(() => {
+      /* best-effort cleanup */
+    });
+    this.spotListenKeyValue = null;
+  }
+
   closeAllWebSockets(): void {
     this.futures.ws.close();
     this.futures.wsUser.close();
     this.spot.ws.close();
+    this.spot.wsUser.close();
     this.closeUserStream();
+    this.closeSpotUserStream();
   }
 
-  reconnectWebSocket(target: 'ws' | 'wsUser' | 'spot'): void {
+  reconnectWebSocket(target: 'ws' | 'wsUser' | 'spot' | 'spotUser'): void {
     if (target === 'ws') this.futures.ws.reconnect();
     else if (target === 'wsUser') this.futures.wsUser.reconnect();
-    else this.spot.ws.reconnect();
+    else if (target === 'spot') this.spot.ws.reconnect();
+    else this.spot.wsUser.reconnect();
   }
 
   resetReconnectAttempts(): void {
     this.futures.ws.resetReconnectAttempts();
     this.futures.wsUser.resetReconnectAttempts();
     this.spot.ws.resetReconnectAttempts();
+    this.spot.wsUser.resetReconnectAttempts();
   }
 }

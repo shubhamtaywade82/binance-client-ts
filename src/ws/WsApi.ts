@@ -26,20 +26,26 @@ function buildQueryString(data: Record<string, unknown>): string {
 export class WsApi {
   constructor(private readonly options: WsApiOptions) {}
 
-  async request(method: string, params: WsApiRequestParams = {}): Promise<WsApiResponse> {
+  async request(
+    method: string,
+    params: WsApiRequestParams = {},
+    options?: { signed?: boolean },
+  ): Promise<WsApiResponse> {
     const { apiKey, apiSecret } = this.options;
-    if (!apiKey || !apiSecret) {
-      throw new Error('API key and secret required for WebSocket API requests');
-    }
+    const signed = options?.signed ?? true;
     const { id = randomUUID(), ...methodParams } = params;
-    const requestParams: Record<string, unknown> = {
-      ...methodParams,
-      apiKey,
-      timestamp: Date.now(),
-      recvWindow: this.options.recvWindow ?? 5000,
-    };
-    const queryString = buildQueryString(requestParams);
-    requestParams.signature = createHmac('sha256', apiSecret).update(queryString).digest('hex');
+    const requestParams: Record<string, unknown> = { ...methodParams };
+
+    if (signed) {
+      if (!apiKey || !apiSecret) {
+        throw new Error('API key and secret required for signed WebSocket API requests');
+      }
+      requestParams.apiKey = apiKey;
+      requestParams.timestamp = Date.now();
+      requestParams.recvWindow = this.options.recvWindow ?? 5000;
+      const queryString = buildQueryString(requestParams);
+      requestParams.signature = createHmac('sha256', apiSecret).update(queryString).digest('hex');
+    }
 
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(this.options.baseUrl);
@@ -88,5 +94,83 @@ export class WsApi {
 
   cancelAlgoOrder(params: Record<string, unknown>): Promise<WsApiResponse> {
     return this.request('algoOrder.cancel', params);
+  }
+
+  orderStatus(params: Record<string, unknown>): Promise<WsApiResponse> {
+    return this.request('order.status', params);
+  }
+
+  placeOrderList(params: Record<string, unknown>): Promise<WsApiResponse> {
+    return this.request('orderList.place', params);
+  }
+
+  cancelOrderList(params: Record<string, unknown>): Promise<WsApiResponse> {
+    return this.request('orderList.cancel', params);
+  }
+
+  orderListStatus(params: Record<string, unknown>): Promise<WsApiResponse> {
+    return this.request('orderList.status', params);
+  }
+
+  accountStatus(): Promise<WsApiResponse> {
+    return this.request('account.status', {});
+  }
+
+  accountPosition(params: Record<string, unknown> = {}): Promise<WsApiResponse> {
+    return this.request('account.position', params);
+  }
+
+  userDataStreamStart(): Promise<WsApiResponse> {
+    return this.request('userDataStream.start', {});
+  }
+
+  userDataStreamPing(listenKey: string): Promise<WsApiResponse> {
+    return this.request('userDataStream.ping', { listenKey });
+  }
+
+  userDataStreamStop(listenKey: string): Promise<WsApiResponse> {
+    return this.request('userDataStream.stop', { listenKey });
+  }
+
+  // ---- Public market data (no signature required) ----
+
+  time(): Promise<WsApiResponse> {
+    return this.request('time', {}, { signed: false });
+  }
+
+  exchangeInfo(params: Record<string, unknown> = {}): Promise<WsApiResponse> {
+    return this.request('exchangeInfo', params, { signed: false });
+  }
+
+  klines(params: Record<string, unknown>): Promise<WsApiResponse> {
+    return this.request('klines', params, { signed: false });
+  }
+
+  aggTrades(params: Record<string, unknown>): Promise<WsApiResponse> {
+    return this.request('aggTrades', params, { signed: false });
+  }
+
+  trades(params: Record<string, unknown>): Promise<WsApiResponse> {
+    return this.request('trades', params, { signed: false });
+  }
+
+  depth(params: Record<string, unknown>): Promise<WsApiResponse> {
+    return this.request('depth', params, { signed: false });
+  }
+
+  avgPrice(params: Record<string, unknown>): Promise<WsApiResponse> {
+    return this.request('avgPrice', params, { signed: false });
+  }
+
+  tickerPrice(params: Record<string, unknown> = {}): Promise<WsApiResponse> {
+    return this.request('ticker.price', params, { signed: false });
+  }
+
+  tickerBookTicker(params: Record<string, unknown> = {}): Promise<WsApiResponse> {
+    return this.request('ticker.bookTicker', params, { signed: false });
+  }
+
+  ticker24hr(params: Record<string, unknown> = {}): Promise<WsApiResponse> {
+    return this.request('ticker.24hr', params, { signed: false });
   }
 }

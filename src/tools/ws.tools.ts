@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { BinanceClient } from '../client/BinanceClient.js';
 import type { ToolDefinition } from './types.js';
-import { textResult } from './types.js';
+import { textResult, normalizeSymbol } from './types.js';
 
 interface WsBuffer {
   subscriptions: Set<string>;
@@ -98,6 +98,59 @@ export function wsTools(client: BinanceClient): ToolDefinition[] {
         client.closeUserStream();
         return textResult({ stopped: true });
       },
+    },
+    {
+      name: 'futures_ws_api_order_status',
+      description: 'Query an order via the signed WebSocket API (order.status) — lower-latency alternative to futures_get_order.',
+      inputSchema: z.object({
+        symbol: z.string().min(1).describe('USD-M pair, e.g. BTCUSDT'),
+        orderId: z.number().int().positive().optional(),
+        origClientOrderId: z.string().optional(),
+      }),
+      handler: async ({ symbol, orderId, origClientOrderId }) =>
+        textResult(await client.futures.wsApi.orderStatus({ symbol: normalizeSymbol(symbol), orderId, origClientOrderId })),
+    },
+    {
+      name: 'futures_ws_api_account_status',
+      description: 'Get account info via the signed WebSocket API (account.status).',
+      inputSchema: z.object({}),
+      handler: async () => textResult(await client.futures.wsApi.accountStatus()),
+    },
+    {
+      name: 'futures_ws_api_account_position',
+      description: 'Get current positions via the signed WebSocket API (account.position).',
+      inputSchema: z.object({ symbol: z.string().min(1).describe('USD-M pair, e.g. BTCUSDT').optional() }),
+      handler: async ({ symbol }) =>
+        textResult(await client.futures.wsApi.accountPosition(symbol ? { symbol: normalizeSymbol(symbol) } : {})),
+    },
+    {
+      name: 'futures_ws_api_user_data_stream_start',
+      description: 'Create a listenKey via the signed WebSocket API (userDataStream.start) — no REST call required.',
+      inputSchema: z.object({}),
+      handler: async () => textResult(await client.futures.wsApi.userDataStreamStart()),
+    },
+    {
+      name: 'futures_ws_api_user_data_stream_stop',
+      description: 'Invalidate a listenKey via the signed WebSocket API (userDataStream.stop).',
+      inputSchema: z.object({ listenKey: z.string().min(1) }),
+      handler: async ({ listenKey }) => textResult(await client.futures.wsApi.userDataStreamStop(listenKey)),
+    },
+    {
+      name: 'futures_ws_api_ticker_price',
+      description: 'Get latest price via the unsigned WebSocket API (ticker.price); omit symbol for all symbols.',
+      inputSchema: z.object({ symbol: z.string().min(1).describe('USD-M pair, e.g. BTCUSDT').optional() }),
+      handler: async ({ symbol }) =>
+        textResult(await client.futures.wsApi.tickerPrice(symbol ? { symbol: normalizeSymbol(symbol) } : {})),
+    },
+    {
+      name: 'futures_ws_api_order_book',
+      description: 'Get order-book depth via the unsigned WebSocket API (depth).',
+      inputSchema: z.object({
+        symbol: z.string().min(1).describe('USD-M pair, e.g. BTCUSDT'),
+        limit: z.enum(['5', '10', '20', '50', '100', '500', '1000']).optional(),
+      }),
+      handler: async ({ symbol, limit }) =>
+        textResult(await client.futures.wsApi.depth({ symbol: normalizeSymbol(symbol), limit })),
     },
   ];
 }

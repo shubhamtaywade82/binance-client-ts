@@ -64,6 +64,18 @@ const order = await client.futures.trading.createOrder({
 });
 await client.futures.trading.cancelOrder('BTCUSDT', { orderId: order.orderId });
 
+// Spot account + trading
+const spotAccount = await client.spot.account.account();
+const spotOrder = await client.spot.trading.createOrder({
+  symbol: 'BTCUSDT',
+  side: 'BUY',
+  type: 'LIMIT',
+  quantity: '0.001',
+  price: '60000',
+  timeInForce: 'GTC',
+});
+await client.spot.trading.cancelOrder('BTCUSDT', { orderId: spotOrder.orderId });
+
 // Market WebSocket (combined stream, auto-reconnect)
 client.futures.ws.subscribe([
   client.futures.ws.kline('SOLUSDT', '15m'),
@@ -76,13 +88,24 @@ const listenKey = await client.startUserStream();
 client.futures.wsUser.on('ORDER_TRADE_UPDATE', (event) => console.log(event.o));
 client.futures.wsUser.on('ACCOUNT_UPDATE', (event) => console.log(event.a));
 client.closeUserStream();
+
+// Spot user data stream
+await client.startSpotUserStream();
+client.spot.wsUser.on('executionReport', (event) => console.log(event.s));
+client.closeSpotUserStream();
 ```
 
 ## API Surface
 
 ### Spot (`client.spot`)
-- `market` — public REST (klines, tickers, depth, trades, aggTrades, exchangeInfo, avgPrice)
-- `ws` — market WebSocket streams
+- `market` — public REST (klines + uiKlines, tickers incl. rolling-window & trading-day, depth,
+  trades, aggTrades, exchangeInfo, avgPrice)
+- `account` — authenticated account (account info, myTrades, myPreventedMatches, commission, rate limits)
+- `trading` — order lifecycle (create/test/get/cancel, open/all orders, cancelReplace, OCO order lists)
+- `userStream` — listenKey lifecycle (create / keep-alive / close)
+- `ws` — market WebSocket streams (kline, trade, aggTrade, depth incl. diff-depth, ticker incl.
+  rolling-window, bookTicker, miniTicker, avgPrice + all-market/arr variants)
+- `wsUser` — spot user data stream (executionReport, outboundAccountPosition, balanceUpdate, listStatus)
 
 ### Futures (`client.futures`)
 - `market` — public REST market data (klines incl. continuous/index/mark/premium-index variants,
@@ -100,11 +123,14 @@ client.closeUserStream();
   filters), `quantize`, `sizePosition` (risk-based sizing), `closePosition`, `marketSnapshot`,
   `accountOverview`, `placeBracketOrder`
 - `userStream` — listenKey lifecycle (create / keep-alive / close)
-- `ws` — market WebSocket streams (kline, continuous/index/mark klines, aggTrade, trade, depth,
-  ticker, rolling-window ticker, mark price, book ticker, mini ticker, liquidations, composite
-  index, asset index + all-market/arr variants)
+- `ws` — market WebSocket streams (kline, continuous/index/mark klines, aggTrade, trade, depth
+  incl. full order-book diff-depth, ticker, rolling-window ticker + all-market variant, mark price,
+  book ticker, mini ticker, liquidations, composite index, asset index + all-market/arr variants)
 - `wsUser` — user data stream (ACCOUNT_UPDATE, ORDER_TRADE_UPDATE, MARGIN_CALL; auto-reconnect)
-- `wsApi` — signed WebSocket API (order.place/cancel/modify, algoOrder.place/cancel)
+- `wsApi` — WebSocket API: signed trading (order.place/cancel/modify/status, algoOrder.place/cancel,
+  orderList.place/cancel/status, account.status/position, userDataStream.start/ping/stop) and public
+  market data (time, exchangeInfo, klines, aggTrades, trades, depth, avgPrice,
+  ticker.price/bookTicker/24hr)
 
 ### Client options
 `apiKey`, `apiSecret`, `testnet`, `demo`, `recvWindow`, `apiBase`, `wsBase`, `wsUserBase`,
@@ -128,6 +154,24 @@ await engine.updatePositions();               // re-mark against live prices
 const close = await engine.placeOrder({ symbol: 'BTCUSDT', side: 'SELL', type: 'MARKET', quantity: 0.05 });
 console.log(close.realizedPnl, engine.getAccountInfo().balance);
 ```
+
+## LLM Tools & MCP
+
+The SDK ships a framework-agnostic tool layer plus an MCP server, so any function-calling agent
+(OpenAI, Anthropic/Claude, MCP hosts) can drive the client.
+
+```ts
+import { BinanceClient, createFuturesToolkit, toolkitToFormats } from 'binance-client-ts';
+const tk = createFuturesToolkit(new BinanceClient({ apiKey, apiSecret, testnet }));
+const { openai, anthropic, mcp } = toolkitToFormats(tk); // tool schemas per format
+```
+
+- **Tool groups**: `market`, `account`, `trading` (USD-M futures), `spot` (Spot), `ws`
+  (streams + WS API), `derived` (composites like size/close/bracket), `paper`.
+- **MCP server**: `npx binance-usdm-mcp` (stdio) auto-registers every tool plus reference
+  resources (`binance://futures/symbols`, `binance://futures/premium-index`, `binance://spot/symbols`).
+- **Agent skills**: Markdown skills under `skills/` — futures trading / market-data / algo /
+  portfolio-margin, plus spot trading / market-data — for Skills-Hub-style agents.
 
 ## Examples
 
