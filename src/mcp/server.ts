@@ -50,4 +50,18 @@ function registerResources(server: McpServer, client: BinanceClient): void {
     },
     async (uri) => json(uri.href, await client.futures.data.assetIndex()),
   );
+
+  server.registerResource(
+    'spot-symbols',
+    'binance://spot/symbols',
+    {
+      title: 'Spot Trading Symbols',
+      description: 'Every tradeable Spot symbol with its status, base/quote assets and permissions',
+      mimeType: 'application/json',
+    },
+    async (uri) => {
+      const info = await client.spot.market.exchangeInfo();
+      return json(uri.href, info.symbols);
+    },
+  );
 }

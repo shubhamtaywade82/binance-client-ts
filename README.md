@@ -155,6 +155,24 @@ const close = await engine.placeOrder({ symbol: 'BTCUSDT', side: 'SELL', type: '
 console.log(close.realizedPnl, engine.getAccountInfo().balance);
 ```
 
+## LLM Tools & MCP
+
+The SDK ships a framework-agnostic tool layer plus an MCP server, so any function-calling agent
+(OpenAI, Anthropic/Claude, MCP hosts) can drive the client.
+
+```ts
+import { BinanceClient, createFuturesToolkit, toolkitToFormats } from 'binance-client-ts';
+const tk = createFuturesToolkit(new BinanceClient({ apiKey, apiSecret, testnet }));
+const { openai, anthropic, mcp } = toolkitToFormats(tk); // tool schemas per format
+```
+
+- **Tool groups**: `market`, `account`, `trading` (USD-M futures), `spot` (Spot), `ws`
+  (streams + WS API), `derived` (composites like size/close/bracket), `paper`.
+- **MCP server**: `npx binance-usdm-mcp` (stdio) auto-registers every tool plus reference
+  resources (`binance://futures/symbols`, `binance://futures/premium-index`, `binance://spot/symbols`).
+- **Agent skills**: Markdown skills under `skills/` — futures trading / market-data / algo /
+  portfolio-margin, plus spot trading / market-data — for Skills-Hub-style agents.
+
 ## Examples
 
 ```bash

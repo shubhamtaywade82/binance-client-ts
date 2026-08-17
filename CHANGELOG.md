@@ -22,6 +22,10 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
   `client.spot.userStream` (spot listenKey), and `client.spot.wsUser` (spot user-data stream).
   Plus spot market REST (`uiKlines`, rolling-window & trading-day tickers) and spot market WS
   (diff-depth, `avgPrice`, rolling-window ticker + all-market variants).
+- **Spot LLM tools + MCP + skills**: `spotTools` group (`spot_*` — market data, account, trading,
+  OCO, user-data stream) wired into `createFuturesToolkit`; WS-API tools
+  (`futures_ws_api_*`) for order/account/position/user-data-stream over the signed WS API;
+  `binance://spot/symbols` MCP resource; and `binance-spot-trading` / `binance-spot-market-data` skills.
 
 ## [2.2.0] - 2026-08-04
 ### Added

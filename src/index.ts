@@ -78,6 +78,7 @@ export {
   marketDataTools,
   accountTools,
   tradingTools,
+  spotTools,
   derivedTools,
   wsTools,
   getBufferedWsEvents,
