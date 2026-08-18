@@ -13,11 +13,6 @@ updates:
       # ships a compatible build. Minor/patch updates still flow through.
       - dependency-name: 'typescript'
         update-types: ['version-update:semver-major']
-      # vitest 4 pulls in vite 8 / rolldown, which require Node >=20.19 and
-      # crash outright on Node 18 (missing node:util#styleText) — we still
-      # test on Node 18 per engines. Pin to 3.x until Node 18 support ends.
-      - dependency-name: 'vitest'
-        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
