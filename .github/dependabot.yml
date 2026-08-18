@@ -7,6 +7,12 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+    ignore:
+      # tsup's bundled DTS generator (rollup-plugin-dts) breaks on TypeScript's
+      # changed compiler internals as of the 7.x major — pin to 5.x until tsup
+      # ships a compatible build. Minor/patch updates still flow through.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
