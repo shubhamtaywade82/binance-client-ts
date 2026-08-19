@@ -3,7 +3,7 @@ name: binance-usdm-futures-tools
 description: "LLM tool-calling + MCP + agent skill for Binance USD-M Futures. Use the binance-sdk tool layer. Public market data (no auth) first, then private signed endpoints on explicit user confirmation."
 metadata:
   version: 1.0.0
-  package: '@nemesis-sdk/binance-sdk'
+  package: '@nemesis-oss/binance-sdk'
   mcp: binance-sdk-mcp
 ---
 
@@ -14,6 +14,7 @@ Wired once in [`binance-sdk`](https://github.com/shubhamtaywade82/binance-sdk), 
 host (MCP server `binance-sdk-mcp`, or a chat-ui's `createFuturesToolkit(...)` output) exposes them to the model.
 
 ## Connection & Auth
+
 - Configure once via env: `BINANCE_API_KEY`, `BINANCE_API_SECRET`, `BINANCE_TESTNET=true` (→ `testnet.binancefuture.com`).
 - Public market-data tools are **unsigned**; account/trade/private tools are **signed** and require the keys above.
 - Base URLs (live): REST `https://fapi.binance.com`, WS market streams `wss://fstream.binance.com/stream`,
@@ -23,11 +24,13 @@ host (MCP server `binance-sdk-mcp`, or a chat-ui's `createFuturesToolkit(...)` o
   `X-MBX-USED-WEIGHT-*` / `X-MBX-ORDER-COUNT-*` response headers, so leave headroom under the caps above.
 
 ## Trigger
+
 Use these tools when the user asks about Binance **USD-M futures** (tickers, order books, trades, klines,
 funding, open interest, positions, balances, orders) — whether for live data, execution, or a chat-ui /
 trading-agent analysis. Do **not** use for spot, COIN-M, or Delta-Exchange contexts.
 
 ## Rules (KISS / Safety)
+
 1. **Public-first.** Satisfy analysis questions from the market-data tools before any signed call.
 2. **Symbols** are always uppercase USD-M pair form, e.g. `BTCUSDT`, `ETHUSDT`, `ETHBTC`. For index/pair
    queries (klines, basis) pass the base pair.
@@ -46,7 +49,7 @@ Each fans out over several endpoints and returns one answer. Round-off and mode 
 not in the model.
 
 | Tool | Replaces | Why it exists |
-|------|----------|---------------|
+| ------ | ---------- | --------------- |
 | `futures_symbol_rules` | `futures_exchange_info` + filter parsing | Flattens the `filters` array into typed tickSize / stepSize / minQty / maxQty / minNotional. |
 | `futures_quantize` | manual rounding | Rounds a price to the tick and a quantity to the step, returning **exchange-ready strings**. Off-tick values are rejected with `-1111`. |
 | `futures_size_position` | exchangeInfo + markPrice + balance + arithmetic | Turns a risk budget (`riskAmount` or `riskPct`) plus a stop into a step-aligned quantity, and reports every failed constraint (min notional, lot bounds, wrong-side stop) instead of quietly adjusting risk. |
@@ -62,7 +65,7 @@ and `-4164` (min notional) rejections.
 ## Public — Market Data Tools (unsigned)
 
 | Tool | Purpose |
-|------|---------|
+| ------ | --------- |
 | `futures_ping` | Test connectivity (REST). |
 | `futures_server_time` | Server time in ms. |
 | `futures_exchange_info` | Symbol/metadata, contract types, filters, delivery dates. |
@@ -107,7 +110,7 @@ and `-4164` (min notional) rejections.
 Subscribe → poll buffered events → act on the parsed payloads:
 
 | Tool | Purpose |
-|------|---------|
+| ------ | --------- |
 | `futures_ws_subscribe` | Subscribe to one or more topics, e.g. `btcusdt@aggTrade`, `btcusdt@kline_1m`, `btcusdt@depth20`, `btcusdt@markPrice@1s`, `btcusdt@bookTicker`, `btcusdt@ticker`, `!ticker@arr`, `!markPrice@arr`, `!forceOrder@arr`. |
 | `futures_ws_unsubscribe` | Unsubscribe topics. |
 | `futures_ws_subscriptions` | List active subscriptions. |
@@ -119,7 +122,7 @@ Subscribe → poll buffered events → act on the parsed payloads:
 ## Private — Account Tools (signed, USER_DATA)
 
 | Tool | Purpose |
-|------|---------|
+| ------ | --------- |
 | `futures_balance` | Balances (v3): asset, wallet/margin/unrealized. |
 | `futures_account` | Full account snapshot (v3). |
 | `futures_account_config` | Fee tier, trading permissions, dual-side position setting. |
@@ -145,7 +148,7 @@ Order types: `LIMIT`, `MARKET`, `STOP`, `STOP_MARKET`, `TAKE_PROFIT`, `TAKE_PROF
 `priceProtect` + `workingType=MARK_PRICE` are recommended for stop triggers.
 
 | Tool | Purpose |
-|------|---------|
+| ------ | --------- |
 | `futures_new_order` | Place order (returns ACK; use `newOrderRespType=RESULT` for immediate fill state). |
 | `futures_test_order` | Validate a draft order without submitting. |
 | `futures_get_order` | Query a specific order. |
@@ -183,12 +186,14 @@ context directly without the model calling anything first:
 | `binance://futures/premium-index` | Mark/index price and funding across all pairs. |
 
 ## LLM Wiring (one-time)
+
 - **MCP server:** `npx binance-sdk-mcp` (stdio) or `BINANCE_API_KEY=… BINANCE_API_SECRET=… npx binance-sdk-mcp --http` (HTTP health on `:PORT`).
   Configure the MCP host (Claude Desktop / Cursor / Claude Code) with
   `command: npx`, `args: ["binance-sdk-mcp"]`. (Stdio transport; no URL needed.)
 - **Direct SDK:**
+
   ```ts
-  import { BinanceClient, createFuturesToolkit, toolkitToFormats } from '@nemesis-sdk/binance-sdk';
+  import { BinanceClient, createFuturesToolkit, toolkitToFormats } from '@nemesis-oss/binance-sdk';
   const client = new BinanceClient({ apiKey, apiSecret, testnet });
   const tk = createFuturesToolkit(client);
   const openaiTools = toolkitToFormats(tk).openai;      // for function-calling agents
@@ -196,11 +201,13 @@ context directly without the model calling anything first:
   const mcpTools = toolkitToFormats(tk).mcp;            // raw JSON-schemas
   await tk.tools.find(t => t.name === 'futures_new_order')!.handler({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.001 }, { env: 'live', isSigned: true });
   ```
+
 - The toolkit is generic over a `BinanceClient` instance, so the same tool
   set is reused by **chat-ui** (OpenAI tools), **Claude Code/Cursor** (MCP), and
   **trading-agent-ts** (Anthropic tools) — single wire-up, no duplication.
 
 ## Notes
+
 - `recvWindow` is fixed to 5000 ms; increase only if server clock skew is observed.
 - The **primitive** order tools (`futures_new_order`, `futures_modify_order`, …) pass price/qty through
   un-rounded. Get the values from `futures_quantize` / `futures_size_position` first, or call

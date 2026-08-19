@@ -3,7 +3,7 @@ name: binance-spot-market-data
 description: "Binance Spot market data + WebSocket streams via binance-sdk. Klines (klines/uiKlines), order book, trades, tickers (24h, book, rolling-window, trading-day), avgPrice, plus diff-depth / avgPrice / rolling-window WS streams."
 metadata:
   version: 1.0.0
-  package: '@nemesis-sdk/binance-sdk'
+  package: '@nemesis-oss/binance-sdk'
   mcp: binance-sdk-mcp
 ---
 
@@ -14,8 +14,9 @@ Public, unsigned market data for Binance **Spot** via [`binance-sdk`](https://gi
 or `createFuturesToolkit(...)` (the `spot` group).
 
 ## REST Tools (unsigned)
+
 | Tool | Purpose |
-|------|---------|
+| ------ | --------- |
 | `spot_ping` / `spot_server_time` | Connectivity / server time. |
 | `spot_exchange_info` | Symbol metadata, filters, permissions, status. |
 | `spot_ticker_price` | Latest price (single symbol). |
@@ -31,10 +32,11 @@ or `createFuturesToolkit(...)` (the `spot` group).
 | `spot_trading_day_ticker` | UTC trading-day open/close/high/low/volume; omit symbol for all. |
 
 ## WebSocket Streams
+
 Subscribe via the futures-style stream builders on `client.spot.ws` (topic names are lowercase):
 
 | Stream | Topic |
-|--------|-------|
+| -------- | ------- |
 | Kline | `<symbol>@kline_<interval>` |
 | Aggregate trade | `<symbol>@aggTrade` |
 | Trade | `<symbol>@trade` |
@@ -47,6 +49,7 @@ Subscribe via the futures-style stream builders on `client.spot.ws` (topic names
 | Average price | `<symbol>@avgPrice` |
 
 ## Notes
+
 - Depth **diff** streams (`@depth`, `@depth@100ms`) are incremental — apply to a snapshot from
   `spot_order_book` to maintain a local book.
 - All-market aggregate topics begin with `!`.

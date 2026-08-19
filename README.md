@@ -9,13 +9,13 @@ role for DhanHQ). Feature-parity with `binance-client-js` (REST + WS), with type
 ## Install
 
 ```bash
-npm install @nemesis-sdk/binance-sdk
+npm install @nemesis-oss/binance-sdk
 ```
 
 ## Usage
 
 ```typescript
-import { BinanceClient } from '@nemesis-sdk/binance-sdk';
+import { BinanceClient } from '@nemesis-oss/binance-sdk';
 
 const client = new BinanceClient({
   apiKey: 'YOUR_API_KEY',      // only needed for authenticated endpoints
@@ -96,6 +96,7 @@ client.closeSpotUserStream();
 ## API Surface
 
 ### Spot (`client.spot`)
+
 - `market` — public REST (klines + uiKlines, tickers incl. rolling-window & trading-day, depth,
   trades, aggTrades, exchangeInfo, avgPrice)
 - `account` — authenticated account (account info, myTrades, myPreventedMatches, commission, rate limits)
@@ -106,6 +107,7 @@ client.closeSpotUserStream();
 - `wsUser` — spot user data stream (executionReport, outboundAccountPosition, balanceUpdate, listStatus)
 
 ### Futures (`client.futures`)
+
 - `market` — public REST market data (klines incl. continuous/index/mark/premium-index variants,
   tickers, depth incl. RPI depth, trades, aggTrades, exchangeInfo)
 - `data` — futures analytics (funding rate, premium index, open interest, long/short ratios, basis,
@@ -131,10 +133,12 @@ client.closeSpotUserStream();
   ticker.price/bookTicker/24hr)
 
 ### Client options
+
 `apiKey`, `apiSecret`, `testnet`, `demo`, `recvWindow`, `apiBase`, `wsBase`, `wsUserBase`,
 `wsApiBase`, `timeoutMs`, `maxRetries`, `retryBaseDelayMs`, `retryMaxDelayMs`.
 
 ### Errors
+
 `BinanceError` base, `BinanceAuthError`, `BinanceApiError` (code + status), `RateLimitError`,
 `NetworkError`.
 
@@ -144,7 +148,7 @@ Simulates fills against live public prices — nothing is sent to the exchange. 
 at the requested leverage and released pro-rata as a position is reduced.
 
 ```typescript
-import { PaperTradingEngine } from '@nemesis-sdk/binance-sdk';
+import { PaperTradingEngine } from '@nemesis-oss/binance-sdk';
 
 const engine = new PaperTradingEngine({ initialBalance: 10_000 });
 await engine.placeOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.05, leverage: 5 });
@@ -159,7 +163,7 @@ The SDK ships a framework-agnostic tool layer plus an MCP server, so any functio
 (OpenAI, Anthropic/Claude, MCP hosts) can drive the client.
 
 ```ts
-import { BinanceClient, createFuturesToolkit, toolkitToFormats } from '@nemesis-sdk/binance-sdk';
+import { BinanceClient, createFuturesToolkit, toolkitToFormats } from '@nemesis-oss/binance-sdk';
 const tk = createFuturesToolkit(new BinanceClient({ apiKey, apiSecret, testnet }));
 const { openai, anthropic, mcp } = toolkitToFormats(tk); // tool schemas per format
 ```

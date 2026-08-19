@@ -3,7 +3,7 @@ name: binance-spot-trading
 description: "LLM tool-calling + MCP for Binance Spot trading. Use the binance-sdk Spot layer (client.spot.account / client.spot.trading) for balances, orders, cancel-replace and OCO order lists. Public market data first; signed order/account actions only on explicit CONFIRM."
 metadata:
   version: 1.0.0
-  package: '@nemesis-sdk/binance-sdk'
+  package: '@nemesis-oss/binance-sdk'
   mcp: binance-sdk-mcp
 ---
 
@@ -14,11 +14,13 @@ any MCP-capable agent through `binance-sdk-mcp` or `createFuturesToolkit(...)` (
 returns a `spot` group). Use for **Spot** (not USD-M futures, COIN-M, or Options).
 
 ## Connection & Auth
+
 - Env: `BINANCE_API_KEY`, `BINANCE_API_SECRET`, `BINANCE_TESTNET=true` (→ `testnet.binance.vision`).
 - Public market-data tools are unsigned; account/trade tools are signed.
 - Base URL (live): REST `https://api.binance.com/api/v3`; user-data WS `wss://stream.binance.com:9443/ws`.
 
 ## Rules (KISS / Safety)
+
 1. **Public-first** — answer analysis questions from `spot_*` market-data tools before any signed call.
 2. **Symbols** are uppercase Spot pairs, e.g. `BTCUSDT`, `ETHBTC`.
 3. **No destructive action without `CONFIRM`** — placing/cancelling/replacing orders or OCO lists needs
@@ -28,8 +30,9 @@ returns a `spot` group). Use for **Spot** (not USD-M futures, COIN-M, or Options
 5. **Use `spot_test_order`** to validate a draft order (and margin) before submitting.
 
 ## Account Tools (signed)
+
 | Tool | Purpose |
-|------|---------|
+| ------ | --------- |
 | `spot_account` | Balances (free/locked), commissions, permissions. |
 | `spot_my_trades` | Filled trades for a symbol (time range / fromId). |
 | `spot_my_prevented_matches` | Orders expired by self-trade-prevention (STP). |
@@ -37,11 +40,12 @@ returns a `spot` group). Use for **Spot** (not USD-M futures, COIN-M, or Options
 | `spot_rate_limit_order` | Current order rate-limit usage. |
 
 ## Trading Tools (signed)
+
 Spot order types: `LIMIT`, `MARKET`, `LIMIT_MAKER`, `STOP_LOSS`, `STOP_LOSS_LIMIT`, `TAKE_PROFIT`,
 `TAKE_PROFIT_LIMIT`. `MARKET` accepts `quantity` **or** `quoteOrderQty` (spend N quote units).
 
 | Tool | Purpose |
-|------|---------|
+| ------ | --------- |
 | `spot_new_order` | Place an order (returns ACK; use `newOrderRespType=RESULT`/`FULL` for fill state). |
 | `spot_test_order` | Validate without submitting. |
 | `spot_get_order` | Query a specific order. |
@@ -52,10 +56,11 @@ Spot order types: `LIMIT`, `MARKET`, `LIMIT_MAKER`, `STOP_LOSS`, `STOP_LOSS_LIMI
 | `spot_cancel_replace_order` | Cancel-replace (cancel + new order atomically). |
 
 ## OCO Order List Tools (signed)
+
 A Spot OCO is one stop-loss limit + one limit-maker take-profit that cancel each other.
 
 | Tool | Purpose |
-|------|---------|
+| ------ | --------- |
 | `spot_new_oco_order` | Create an OCO (price + stopPrice; optional stopLimitPrice). |
 | `spot_get_oco_order` | Query an OCO by `orderListId` / `listClientOrderId`. |
 | `spot_cancel_oco_order` | Cancel an entire OCO list. |
@@ -64,6 +69,7 @@ A Spot OCO is one stop-loss limit + one limit-maker take-profit that cancel each
 | `spot_cancel_open_oco_orders` | Cancel all OCO lists for a symbol. |
 
 ## User Data Stream
+
 | Tool | Purpose |
 |------|---------|
 | `spot_ws_start_user_stream` | Create listenKey, connect private WS, start keep-alive. |
@@ -72,13 +78,15 @@ A Spot OCO is one stop-loss limit + one limit-maker take-profit that cancel each
 Events (via `client.spot.wsUser`): `executionReport`, `outboundAccountPosition`, `balanceUpdate`, `listStatus`.
 
 ## MCP Resources
+
 | URI | Contents |
 |-----|----------|
 | `binance://spot/symbols` | Every tradeable Spot symbol with status, base/quote assets and permissions. |
 
 ## LLM Wiring (one-time)
+
 ```ts
-import { BinanceClient, createFuturesToolkit } from '@nemesis-sdk/binance-sdk';
+import { BinanceClient, createFuturesToolkit } from '@nemesis-oss/binance-sdk';
 const client = new BinanceClient({ apiKey, apiSecret, testnet });
 const tk = createFuturesToolkit(client);
 await tk.spot.find(t => t.name === 'spot_new_order')!.handler(
@@ -88,5 +96,6 @@ await tk.spot.find(t => t.name === 'spot_new_order')!.handler(
 ```
 
 ## Notes
+
 - Spot `LIMIT` orders **require** `timeInForce` (GTC/IOC/FOK). `LIMIT_MAKER` is a post-only limit (no `timeInForce`).
 - Pass `quoteOrderQty` (instead of `quantity`) to buy a MARKET order by spend amount.
