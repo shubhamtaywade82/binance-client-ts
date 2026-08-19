@@ -1,6 +1,6 @@
 {
   "name": "@nemesis-sdk/binance-sdk",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "description": "TypeScript SDK for Binance APIs (Spot + USD-M Futures) — market data, account, trading, algo orders, user data streams, signed WS API, LLM tool layer + MCP server",
   "license": "MIT",
   "author": "Shubham Taywade",
