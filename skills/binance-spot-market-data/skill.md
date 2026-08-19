@@ -9,7 +9,7 @@ metadata:
 
 # Binance Spot — Market Data & Streams
 
-Public, unsigned market data for Binance **Spot** via [`binance-sdk`](https://github.com/shubhamtaywade82/binance-client-ts)
+Public, unsigned market data for Binance **Spot** via [`binance-sdk`](https://github.com/shubhamtaywade82/binance-sdk)
 (`client.spot.market` REST + `client.spot.ws` streams). Exposed as tools through `binance-sdk-mcp`
 or `createFuturesToolkit(...)` (the `spot` group).
 

@@ -5,7 +5,7 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [3.0.0]
 ### Changed
-- **Breaking:** package renamed from `@shubhamtaywade82/binance-client-ts` to
+- **Breaking:** package renamed from `@shubhamtaywade82/binance-sdk` to
   `@nemesis-sdk/binance-sdk`. Update imports accordingly.
 - **Breaking:** MCP server binary renamed from `binance-usdm-mcp` to `binance-sdk-mcp`
   (`npx binance-sdk-mcp`); MCP server name changed from `binance-usdm-futures` to `binance-sdk`.

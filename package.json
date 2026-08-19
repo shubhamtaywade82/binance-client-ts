@@ -6,7 +6,7 @@
   "author": "Shubham Taywade",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shubhamtaywade82/binance-client-ts.git"
+    "url": "git+https://github.com/shubhamtaywade82/binance-sdk.git"
   },
   "publishConfig": {
     "access": "public"

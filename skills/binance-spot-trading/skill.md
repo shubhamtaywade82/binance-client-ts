@@ -9,7 +9,7 @@ metadata:
 
 # Binance Spot — Trading & Account Tools
 
-Wired once in [`binance-sdk`](https://github.com/shubhamtaywade82/binance-client-ts) and exposed to
+Wired once in [`binance-sdk`](https://github.com/shubhamtaywade82/binance-sdk) and exposed to
 any MCP-capable agent through `binance-sdk-mcp` or `createFuturesToolkit(...)` (the toolkit now also
 returns a `spot` group). Use for **Spot** (not USD-M futures, COIN-M, or Options).
 

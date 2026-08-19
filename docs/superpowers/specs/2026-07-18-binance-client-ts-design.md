@@ -1,4 +1,4 @@
-# binance-client-ts — Design Spec
+# binance-sdk — Design Spec
 
 Date: 2026-07-18
 
@@ -20,8 +20,8 @@ market data only.
 
 ## Package
 
-- Path: `sdk/binance-client-ts` (own git repo, sibling to `sdk/dhanhq-ts`).
-- npm name: `binance-client-ts` (unscoped, matches repo name — same pattern as
+- Path: `sdk/binance-sdk` (own git repo, sibling to `sdk/dhanhq-ts`).
+- npm name: `binance-sdk` (unscoped, matches repo name — same pattern as
   `trading-concepts-ts` itself).
 - Build: `tsup` → ESM + CJS + `.d.ts`, `"type": "module"`, `main`/`module`/`types`/`exports`
   fields matching `trading-concepts-ts/package.json`.

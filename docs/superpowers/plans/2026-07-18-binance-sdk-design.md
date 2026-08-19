@@ -1,8 +1,8 @@
-# binance-client-ts Implementation Plan
+# binance-sdk Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build `binance-client-ts`, a canonical TypeScript client for Binance's public REST + WebSocket APIs (Spot + USD-M Futures), for `sdk/binance-client-ts`.
+**Goal:** Build `binance-sdk`, a canonical TypeScript client for Binance's public REST + WebSocket APIs (Spot + USD-M Futures), for `sdk/binance-sdk`.
 
 **Architecture:** Facade `BinanceClient` exposing `.spot` (market REST + WS) and `.futures` (market REST + futures-data REST + WS) namespaces. A shared `HttpClient` (axios + bottleneck rate limiting + typed-error retry) backs all REST resources. A shared `BaseWS` (combined-stream `ws` connection with reconnect) backs both market WS clients. Zod schemas validate and coerce every REST/WS response into typed objects (numeric strings → numbers).
 
@@ -10,12 +10,12 @@
 
 ## Global Constraints
 
-- Package path: `sdk/binance-client-ts` (own git repo, already `git init`'d with the design spec committed).
-- npm package name: `binance-client-ts` (unscoped).
+- Package path: `sdk/binance-sdk` (own git repo, already `git init`'d with the design spec committed).
+- npm package name: `binance-sdk` (unscoped).
 - Public REST + public WS only — no API keys, no account/order endpoints.
 - Node >= 18. `"type": "module"`. Build output: ESM + CJS + `.d.ts` via tsup, matching `libraries/trading-concepts-ts`'s `tsup.config.ts` / `tsconfig.json` conventions.
 - Tests: vitest, files under `test/**/*.test.ts` (not `tests/`), matching `trading-concepts-ts`.
-- Spec: `docs/superpowers/specs/2026-07-18-binance-client-ts-design.md`.
+- Spec: `docs/superpowers/specs/2026-07-18-binance-sdk-design.md`.
 
 ---
 
@@ -37,14 +37,14 @@
 
 ```json
 {
-  "name": "binance-client-ts",
+  "name": "binance-sdk",
   "version": "0.1.0",
   "description": "TypeScript client for Binance public REST + WebSocket APIs (Spot + USD-M Futures)",
   "license": "MIT",
   "author": "Shubham Taywade",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shubhamtaywade82/binance-client-ts.git"
+    "url": "git+https://github.com/shubhamtaywade82/binance-sdk.git"
   },
   "type": "module",
   "main": "./dist/index.cjs",
@@ -2035,7 +2035,7 @@ Expected: prints spot klines, futures funding rate, futures open interest, then 
 - [ ] **Step 3: Write `README.md`**
 
 ```markdown
-# binance-client-ts
+# binance-sdk
 
 TypeScript client for Binance's **public** REST + WebSocket APIs — Spot and USD-M Futures.
 Public market data only: no API keys, no account/order endpoints.
@@ -2049,13 +2049,13 @@ needs Binance market data.
 Not yet published. Reference via a local path or git URL, e.g.:
 
 \`\`\`json
-{ "dependencies": { "binance-client-ts": "file:../binance-client-ts" } }
+{ "dependencies": { "binance-sdk": "file:../binance-sdk" } }
 \`\`\`
 
 ## Usage
 
 \`\`\`typescript
-import { BinanceClient } from 'binance-client-ts';
+import { BinanceClient } from 'binance-sdk';
 
 const client = new BinanceClient();
 

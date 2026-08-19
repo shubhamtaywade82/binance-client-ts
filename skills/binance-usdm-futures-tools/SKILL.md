@@ -9,7 +9,7 @@ metadata:
 
 # Binance USDⓈ-M Futures — LLM Tools & MCP
 
-Wired once in [`binance-sdk`](https://github.com/shubhamtaywade82/binance-client-ts), used everywhere
+Wired once in [`binance-sdk`](https://github.com/shubhamtaywade82/binance-sdk), used everywhere
 (chat-ui, trading-agent-ts, any MCP-capable agent). All tool names below are stable SDK entry points; the
 host (MCP server `binance-sdk-mcp`, or a chat-ui's `createFuturesToolkit(...)` output) exposes them to the model.
 
