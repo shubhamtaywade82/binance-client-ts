@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "binance-sdk": {
+      "command": "npx",
+      "args": ["tsx", "/absolute/path/to/binance-sdk/src/mcp/index.ts"],
+      "env": {
+        "BINANCE_API_KEY": "YOUR_TESTNET_API_KEY",
+        "BINANCE_API_SECRET": "YOUR_TESTNET_API_SECRET",
+        "BINANCE_TESTNET": "true"
+      }
+    }
+  }
+}

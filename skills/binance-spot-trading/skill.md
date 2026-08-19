@@ -1,16 +1,16 @@
 ---
 name: binance-spot-trading
-description: "LLM tool-calling + MCP for Binance Spot trading. Use the binance-client-ts Spot layer (client.spot.account / client.spot.trading) for balances, orders, cancel-replace and OCO order lists. Public market data first; signed order/account actions only on explicit CONFIRM."
+description: "LLM tool-calling + MCP for Binance Spot trading. Use the binance-sdk Spot layer (client.spot.account / client.spot.trading) for balances, orders, cancel-replace and OCO order lists. Public market data first; signed order/account actions only on explicit CONFIRM."
 metadata:
   version: 1.0.0
-  package: '@shubhamtaywade82/binance-client-ts'
-  mcp: binance-usdm-mcp
+  package: '@nemesis-sdk/binance-sdk'
+  mcp: binance-sdk-mcp
 ---
 
 # Binance Spot — Trading & Account Tools
 
-Wired once in [`binance-client-ts`](https://github.com/shubhamtaywade82/binance-client-ts) and exposed to
-any MCP-capable agent through `binance-usdm-mcp` or `createFuturesToolkit(...)` (the toolkit now also
+Wired once in [`binance-sdk`](https://github.com/shubhamtaywade82/binance-client-ts) and exposed to
+any MCP-capable agent through `binance-sdk-mcp` or `createFuturesToolkit(...)` (the toolkit now also
 returns a `spot` group). Use for **Spot** (not USD-M futures, COIN-M, or Options).
 
 ## Connection & Auth
@@ -78,7 +78,7 @@ Events (via `client.spot.wsUser`): `executionReport`, `outboundAccountPosition`,
 
 ## LLM Wiring (one-time)
 ```ts
-import { BinanceClient, createFuturesToolkit } from '@shubhamtaywade82/binance-client-ts';
+import { BinanceClient, createFuturesToolkit } from '@nemesis-sdk/binance-sdk';
 const client = new BinanceClient({ apiKey, apiSecret, testnet });
 const tk = createFuturesToolkit(client);
 await tk.spot.find(t => t.name === 'spot_new_order')!.handler(

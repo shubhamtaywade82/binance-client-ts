@@ -13,8 +13,8 @@ license: MIT
 
 # Binance Futures Market Data
 
-Read-only Binance USDⓈ-M Futures market data via `binance-client-ts`
-(`client.futures.market` / `client.futures.data`) and the `futures_*` tools / `binance-usdm-mcp` server.
+Read-only Binance USDⓈ-M Futures market data via `binance-sdk`
+(`client.futures.market` / `client.futures.data`) and the `futures_*` tools / `binance-sdk-mcp` server.
 
 - Symbols are uppercase USD-M pairs, e.g. `BTCUSDT`, `ETHUSDT`, `SOLUSDT`, `XRPUSDT`.
 - For live data, combine the REST ticker with a WebSocket subscription (`futures_ws_events`).

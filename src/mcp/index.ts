@@ -23,13 +23,13 @@ function startHttp(): void {
   const server = http.createServer((req, res) => {
     res.setHeader('content-type', 'application/json');
     if (req.url === '/health') {
-      res.end(JSON.stringify({ ok: true, name: 'binance-usdm-futures-mcp' }));
+      res.end(JSON.stringify({ ok: true, name: 'binance-sdk-mcp' }));
       return;
     }
     res.statusCode = 501;
     res.end(JSON.stringify({ error: 'Use stdio for MCP JSON-RPC. HTTP health endpoint is available at /health.' }));
   });
-  server.listen(port, () => console.error(`Binance USD-M MCP HTTP health server listening on ${port}`));
+  server.listen(port, () => console.error(`binance-sdk MCP HTTP health server listening on ${port}`));
 }
 
 if (process.argv.includes('--http') || process.env.MCP_TRANSPORT === 'http') startHttp();
