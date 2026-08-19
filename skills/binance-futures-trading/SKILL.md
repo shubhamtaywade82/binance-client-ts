@@ -14,8 +14,8 @@ license: MIT
 
 # Binance Futures Trading
 
-Execute Binance USDⓈ-M Futures orders and manage positions/leverage via `binance-client-ts`
-(`client.futures.trading` / `client.futures.account`) and the `futures_*` tools / `binance-usdm-mcp` server.
+Execute Binance USDⓈ-M Futures orders and manage positions/leverage via `binance-sdk`
+(`client.futures.trading` / `client.futures.account`) and the `futures_*` tools / `binance-sdk-mcp` server.
 
 ⚠️ **Mainnet orders require `CONFIRM`.** Never submit a signed order tool until the user
 explicitly types `CONFIRM` (or you have explicit allowance). Use `futures_test_order` first

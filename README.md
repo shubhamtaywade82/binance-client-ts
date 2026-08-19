@@ -1,6 +1,6 @@
-# binance-client-ts
+# binance-sdk
 
-TypeScript client for Binance — **Spot + USD-M Futures**, REST + WebSocket, public market data
+TypeScript SDK for Binance — **Spot + USD-M Futures**, REST + WebSocket, public market data
 and authenticated trading, with zod-validated typed responses.
 
 Canonical Binance client for the `trading-workspace` `sdk/` directory (mirrors `sdk/dhanhq-ts`'s
@@ -9,13 +9,13 @@ role for DhanHQ). Feature-parity with `binance-client-js` (REST + WS), with type
 ## Install
 
 ```bash
-npm install @shubhamtaywade82/binance-client-ts
+npm install @nemesis-sdk/binance-sdk
 ```
 
 ## Usage
 
 ```typescript
-import { BinanceClient } from '@shubhamtaywade82/binance-client-ts';
+import { BinanceClient } from '@nemesis-sdk/binance-sdk';
 
 const client = new BinanceClient({
   apiKey: 'YOUR_API_KEY',      // only needed for authenticated endpoints
@@ -144,7 +144,7 @@ Simulates fills against live public prices — nothing is sent to the exchange. 
 at the requested leverage and released pro-rata as a position is reduced.
 
 ```typescript
-import { PaperTradingEngine } from '@shubhamtaywade82/binance-client-ts';
+import { PaperTradingEngine } from '@nemesis-sdk/binance-sdk';
 
 const engine = new PaperTradingEngine({ initialBalance: 10_000 });
 await engine.placeOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.05, leverage: 5 });
@@ -159,15 +159,17 @@ The SDK ships a framework-agnostic tool layer plus an MCP server, so any functio
 (OpenAI, Anthropic/Claude, MCP hosts) can drive the client.
 
 ```ts
-import { BinanceClient, createFuturesToolkit, toolkitToFormats } from '@shubhamtaywade82/binance-client-ts';
+import { BinanceClient, createFuturesToolkit, toolkitToFormats } from '@nemesis-sdk/binance-sdk';
 const tk = createFuturesToolkit(new BinanceClient({ apiKey, apiSecret, testnet }));
 const { openai, anthropic, mcp } = toolkitToFormats(tk); // tool schemas per format
 ```
 
 - **Tool groups**: `market`, `account`, `trading` (USD-M futures), `spot` (Spot), `ws`
   (streams + WS API), `derived` (composites like size/close/bracket), `paper`.
-- **MCP server**: `npx binance-usdm-mcp` (stdio) auto-registers every tool plus reference
+- **MCP server**: `npx binance-sdk-mcp` (stdio) auto-registers every tool plus reference
   resources (`binance://futures/symbols`, `binance://futures/premium-index`, `binance://spot/symbols`).
+  For local development against source instead of the published package, point your MCP host at
+  `mcp-config/local-dev.json` (runs `npx tsx src/mcp/index.ts` directly).
 - **Agent skills**: Markdown skills under `skills/` — futures trading / market-data / algo /
   portfolio-margin, plus spot trading / market-data — for Skills-Hub-style agents.
 

@@ -1,7 +1,7 @@
 ---
 title: Derivatives Trading (USDS-M Futures)
 description: >
-  Trade Binance USDⓈ-M perpetual and quarterly futures with the binance-client-ts SDK.
+  Trade Binance USDⓈ-M perpetual and quarterly futures with the binance-sdk package.
   Full order lifecycle (market/limit/stop/stop-market/TP/SL/trailing), positions, leverage,
   margin mode, batch orders, and algo (conditional/VP) orders. Authenticated (signed) endpoints.
 metadata:
@@ -18,9 +18,9 @@ license: MIT
 
 # Derivatives Trading — USDS-M Futures
 
-Trade Binance USDⓈ-M Futures (perpetual & quarterly) via the `binance-client-ts` SDK
+Trade Binance USDⓈ-M Futures (perpetual & quarterly) via `binance-sdk`
 (`client.futures.trading` / `client.futures.account`), exposed to LLM agents as the
-`futures_*` tools and via the `binance-usdm-mcp` MCP server.
+`futures_*` tools and via the `binance-sdk-mcp` MCP server.
 
 ## Trigger
 Use when the user wants to **place, modify, cancel, or query orders or positions**,

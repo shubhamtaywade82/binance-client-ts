@@ -1,7 +1,16 @@
 # Changelog
 
-All notable changes to `binance-client-ts` are documented here.
+All notable changes to `binance-sdk` are documented here.
 Format inspired by [Keep a Changelog](https://keepachangelog.com/).
+
+## [3.0.0]
+### Changed
+- **Breaking:** package renamed from `@shubhamtaywade82/binance-client-ts` to
+  `@nemesis-sdk/binance-sdk`. Update imports accordingly.
+- **Breaking:** MCP server binary renamed from `binance-usdm-mcp` to `binance-sdk-mcp`
+  (`npx binance-sdk-mcp`); MCP server name changed from `binance-usdm-futures` to `binance-sdk`.
+- Added `mcp-config/local-dev.json`, a host config that runs the MCP server from source
+  (`npx tsx src/mcp/index.ts`) for local development without publishing first.
 
 ## [Unreleased]
 ### Fixed

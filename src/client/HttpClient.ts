@@ -122,7 +122,7 @@ export class HttpClient {
   private buildHeaders(mode: AuthMode): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': 'binance-client-ts',
+      'User-Agent': 'binance-sdk',
     };
     if (mode !== 'public') headers['X-MBX-APIKEY'] = this.requireApiKey();
     return headers;

@@ -1,17 +1,17 @@
 ---
 name: binance-usdm-futures-tools
-description: "LLM tool-calling + MCP + agent skill for Binance USD-M Futures. Use the binance-client-ts SDK tool layer. Public market data (no auth) first, then private signed endpoints on explicit user confirmation."
+description: "LLM tool-calling + MCP + agent skill for Binance USD-M Futures. Use the binance-sdk tool layer. Public market data (no auth) first, then private signed endpoints on explicit user confirmation."
 metadata:
   version: 1.0.0
-  package: '@shubhamtaywade82/binance-client-ts'
-  mcp: binance-usdm-mcp
+  package: '@nemesis-sdk/binance-sdk'
+  mcp: binance-sdk-mcp
 ---
 
 # Binance USDⓈ-M Futures — LLM Tools & MCP
 
-Wired once in [`binance-client-ts`](https://github.com/shubhamtaywade82/binance-client-ts), used everywhere
+Wired once in [`binance-sdk`](https://github.com/shubhamtaywade82/binance-client-ts), used everywhere
 (chat-ui, trading-agent-ts, any MCP-capable agent). All tool names below are stable SDK entry points; the
-host (MCP server `binance-usdm-mcp`, or a chat-ui's `createFuturesToolkit(...)` output) exposes them to the model.
+host (MCP server `binance-sdk-mcp`, or a chat-ui's `createFuturesToolkit(...)` output) exposes them to the model.
 
 ## Connection & Auth
 - Configure once via env: `BINANCE_API_KEY`, `BINANCE_API_SECRET`, `BINANCE_TESTNET=true` (→ `testnet.binancefuture.com`).
@@ -183,12 +183,12 @@ context directly without the model calling anything first:
 | `binance://futures/premium-index` | Mark/index price and funding across all pairs. |
 
 ## LLM Wiring (one-time)
-- **MCP server:** `npx binance-usdm-mcp` (stdio) or `BINANCE_API_KEY=… BINANCE_API_SECRET=… npx binance-usdm-mcp --http` (HTTP health on `:PORT`).
+- **MCP server:** `npx binance-sdk-mcp` (stdio) or `BINANCE_API_KEY=… BINANCE_API_SECRET=… npx binance-sdk-mcp --http` (HTTP health on `:PORT`).
   Configure the MCP host (Claude Desktop / Cursor / Claude Code) with
-  `command: npx`, `args: ["binance-usdm-mcp"]`. (Stdio transport; no URL needed.)
+  `command: npx`, `args: ["binance-sdk-mcp"]`. (Stdio transport; no URL needed.)
 - **Direct SDK:**
   ```ts
-  import { BinanceClient, createFuturesToolkit, toolkitToFormats } from '@shubhamtaywade82/binance-client-ts';
+  import { BinanceClient, createFuturesToolkit, toolkitToFormats } from '@nemesis-sdk/binance-sdk';
   const client = new BinanceClient({ apiKey, apiSecret, testnet });
   const tk = createFuturesToolkit(client);
   const openaiTools = toolkitToFormats(tk).openai;      // for function-calling agents

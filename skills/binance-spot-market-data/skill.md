@@ -1,16 +1,16 @@
 ---
 name: binance-spot-market-data
-description: "Binance Spot market data + WebSocket streams via binance-client-ts. Klines (klines/uiKlines), order book, trades, tickers (24h, book, rolling-window, trading-day), avgPrice, plus diff-depth / avgPrice / rolling-window WS streams."
+description: "Binance Spot market data + WebSocket streams via binance-sdk. Klines (klines/uiKlines), order book, trades, tickers (24h, book, rolling-window, trading-day), avgPrice, plus diff-depth / avgPrice / rolling-window WS streams."
 metadata:
   version: 1.0.0
-  package: '@shubhamtaywade82/binance-client-ts'
-  mcp: binance-usdm-mcp
+  package: '@nemesis-sdk/binance-sdk'
+  mcp: binance-sdk-mcp
 ---
 
 # Binance Spot — Market Data & Streams
 
-Public, unsigned market data for Binance **Spot** via [`binance-client-ts`](https://github.com/shubhamtaywade82/binance-client-ts)
-(`client.spot.market` REST + `client.spot.ws` streams). Exposed as tools through `binance-usdm-mcp`
+Public, unsigned market data for Binance **Spot** via [`binance-sdk`](https://github.com/shubhamtaywade82/binance-client-ts)
+(`client.spot.market` REST + `client.spot.ws` streams). Exposed as tools through `binance-sdk-mcp`
 or `createFuturesToolkit(...)` (the `spot` group).
 
 ## REST Tools (unsigned)
